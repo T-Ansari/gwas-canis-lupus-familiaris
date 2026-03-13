@@ -3,7 +3,7 @@
 ---
 
 ## Overview
-This repository contains a reproducible bioinformatics pipeline to perform a genome wide association study (GWAS) on *Canis lupus familiaris* sequencing data. The pipeline is designed to run on a SLURM based High Performance Computing (HPC) cluster.
+This repository contains a reproducible bioinformatics pipeline to perform a genome wide association study (GWAS) on *Canis lupus familiaris* sequencing data. 
 
 ---
 
@@ -26,41 +26,40 @@ Alternatively, the modules can be loaded or installed individually using the ver
 
 | Software | Version | Purpose |
 | ----- | ----- | ----- |
-| fastp | 0.23.4 | Read trimming and quality control |
-| BWA | 0.7.17 | Alignment of sequences to reference genome | 
-| Samtools | 1.18 | BAM file processing, indexing and sorting |
-| Picard | 3.0.0 | Removal of duplicate reads from BAM files |
-| BCFTools | 1.18 | Variant calling and VCF file generation |
+| [fastp](https://github.com/OpenGene/fastp) | 0.23.4 | Read trimming and quality control |
+| [BWA](https://github.com/lh3/bwa) | 0.7.17 | Alignment of sequences to reference genome | 
+| [Samtools](https://github.com/samtools/samtools) | 1.18 | BAM file processing, indexing and sorting |
+| [Picard](https://github.com/broadinstitute/picard) | 3.0.0 | Removal of duplicate reads from BAM files |
+| [BCFTools](https://github.com/samtools/bcftools) | 1.18 | Variant calling and VCF file generation |
 
+---
 
 ## Pipeline workflow
 The pipeline consists of several analysis steps, that require the results of the steps before each one. 
 
 Please ensure the conda environment has been created before attempting these steps.
 
-### 1. Prepare Reads for Trimming
 
-To run fastp, a text file containing a list of paths to your **forward reads** is required. These must be in **paired-end gzipped fastq format**, ending with:
-- `_1.fastq.gz`
-- `_2.fastq.gz`
+### 1. Fastp Read Trimming
+Quality control and read trimming is performed using `fastp` to remove contamination and low quality bases that may impact the alignment and further downstream analyses.
 
-From the directory containing the scripts, run: 
-`ls "PATH_TO_YOUR_FASTQ_FILES/*_1.fastq.gz > names.txt`
-
-Verify the file has been created before continuing. You do not need to run this for the `_2.fastq.gz` files, the scripts automatically locates the matching files.
-
-### 2. Fastp Read Trimming
-
-The script [1_Fastp.sh](1_Fastp.sh) performs quality control and read trimming using `fastp`.
-
-This step removes: 
+This script [1_Fastp.sh](1_Fastp.sh) removes: 
 - low quality bases
 - adapater contamination sequences
 - very short reads
 
-The script uses the `names.txt` file created in Step 1 to locate files to process.
+**Before running the script:**
+- Ensure fastq reads are in paired-end gzipped fastq format, ending with: `_1.fastq.gz` and `_2.fastq.gz`
+- From the directory containing the scripts, run: 
+`ls "PATH_TO_YOUR_FASTQ_FILES/*_1.fastq.gz > names.txt`
+- Ensure that the `names.txt` file exists
+- Ensure the paths in `names.txt` are correct
+- Change the `--array=0-114` line in the SLURM header to match the number of lines in `names.txt`
+- Ensure each `_1.fastq.gz` file has a complementary `_2.fastq.gz` file
 
-Each sample will create the following:
+Then, run this script using: `sbatch 1_Fastp.sh`
+
+Output files for each sample:
 
 | File | Description |
 | --- | --- |
@@ -70,15 +69,7 @@ Each sample will create the following:
 | `*.json` | Statistics summary |
 | `*.log` | Log output |
 
-**Before running the script:**
-- Ensure that the `names.txt` file exists
-- The paths in `names.txt` are correct
-- Change the `--array=0-114` line in the SLURM header to match the number of lines in `names.txt`
-- Ensure each `_1.fastq.gz` file has a complementary `_2.fastq.gz` file
-
-Then, run this script using: `sbatch 1_Fastp.sh`
-
-### 3. Reference Genome Indexing
+### 2. Reference Genome Indexing
 The reference genome must be uncompressed and indexed before it can be used for alignment and variant calling.
 
 The script [2_Index_Reference.sh](2_Index_Reference.sh) will:
@@ -92,10 +83,10 @@ Edit the line `REF_GZ=PATH/TO/YOUR/REFERENCE/reference.fna.gz` in [2_Index_Refer
 
 Then, run the script with: `sbatch 2_Index_Reference.sh`
 
-### 4. Alignment and BAM processing
-The script [3_Bam_Creation.sh](3_Bam_Creation.sh) aligns the trimmed reads to the reference genome using `BWA-MEM` and removes duplicates using `Picard`.
+### 3. Alignment and BAM processing
+The trimmed reads are alined to the reference genome using `BWA-MEM` and duplicates removed using `Picard`
 
-The script performs several steps:
+The script [3_Bam_Creation.sh](3_Bam_Creation.sh) performs several steps:
 1. Align trimmed reads to the reference genome.
 2. Convert SAM files outputted by alignment to BAM files.
 3. Sort the BAM files.
@@ -106,14 +97,38 @@ The script performs several steps:
 - From the directory containing the scripts, run:
 `ls ../trimmed_fastq/*_1.trimmed.fq.gz > trims.txt`
 - Ensure that the `trims.txt` file exists
-- The paths in `trims.txt` are correct
+- Ensure the paths in `trims.txt` are correct
 - Change the `--array=0-114` line in the SLURM header to match the number of lines in `trims.txt`
 
 Then, run the script with: `sbatch 3_Bam_Creation.sh`
 
-### 5. Variant Calling
+### 4. Variant Calling
+Variants are identified and called using `bcftools mpileup` and `bcftools call`.
+
+The script [4_Variant_Calling.sh](4_Variant_Calling.sh) performs the following steps:
+1. Pileup generation
+2. Variant and SNP detection
+3. Indexing of VCF output files
+
+**Before running the script:**
+- From the directory containing the scripts, run:
+`ls ../bam/*.rmd.bam > bam_list.txt`
+- Ensure that the `bam_list.txt` file exists
+- Ensure the paths in `bam_list.txt` are correct
+- Create a file called `dog_chr_names.txt` containing a list of chromosomes in the reference genome.
+- Change the `--array=0-38` line in the SLURM header to match the **number of chromosomes** in `dog_chr_names.txt`
+
+Then, run the script with: `sbatch 4_Variant_Calling.sh`
+
+Output files:
+
+| File | Description |
+|---|---|
+| `.vcf.gz` | Compressed variant call file |
+| `.vcf.gz.csi` | VCF index file |
 
 ## Notes
+The pipeline is designed to run on a SLURM based High Performance Computing (HPC) cluster.
 
 ## Acknowledgements
 - Tahir Ansari

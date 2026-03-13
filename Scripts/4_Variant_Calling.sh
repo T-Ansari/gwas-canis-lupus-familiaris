@@ -25,14 +25,11 @@ set -euo pipefail
 #ls ../bam/*.rmd.bam > bam_list.txt
 
 # Setting file locations
-REF=/share/BioinfMSc/life4136_2526/rotation3/group1/TA/reference/reference.fna
+REF=../reference/reference.fna
 VCFDIR=../vcf
-BAMLIST=bamlist.txt
+BAMLIST=bam_list.txt
 
 mkdir -p "$VCFDIR"
-
-# Create list of fastq files (Run once before script)
-#ls "$TRIMDIR"/*_1.trimmed.fq.gz > names.txt
 
 # Load Chromosome names
 mapfile -t CHRS < dog_chr_names.txt
