@@ -1,7 +1,5 @@
 # LIFE4136 - *Canis lupus familiaris* Genome Wide Association Study
 
----
-
 ## Overview
 This repository contains a reproducible bioinformatics pipeline to perform a genome wide association study (GWAS) on *Canis lupus familiaris* sequencing data. 
 
@@ -102,30 +100,54 @@ The script [3_Bam_Creation.sh](3_Bam_Creation.sh) performs several steps:
 
 Then, run the script with: `sbatch 3_Bam_Creation.sh`
 
-### 4. Variant Calling
+### 4. BAM Filtering
+BAM files need to be filtered to remove low quality regions, unmapped and secondary mapped regions
+
+The script [4_Bam_Filtering.sh](4_Bam_Filtering.sh) performs the following steps:
+1. Removes unmapped regions
+2. Removes secondary mapped regions
+3. Remove anything with a quality score below 20
+
+**Before running the script:**
+- From the directory containing the scripts, run:
+`ls ../bam/*.bam > bam_list.txt`
+- Ensure that the `filtered_bams.txt` file exists
+- Change the `--array=0-100` line in the SLURM header to match the **number of BAMs** in `bam_list.txt`
+
+
+### 5. Variant Calling
 Variants are identified and called using `bcftools mpileup` and `bcftools call`.
 
-The script [4_Variant_Calling.sh](4_Variant_Calling.sh) performs the following steps:
+The script [5_Variant_Calling.sh](5_Variant_Calling.sh) performs the following steps:
 1. Pileup generation
 2. Variant and SNP detection
 3. Indexing of VCF output files
 
 **Before running the script:**
 - From the directory containing the scripts, run:
-`ls ../bam/*.rmd.bam > bam_list.txt`
-- Ensure that the `bam_list.txt` file exists
-- Ensure the paths in `bam_list.txt` are correct
+`ls ../filtered_bam/*.bam > filtered_bams.txt`
+- Ensure that the `filtered_bams.txt` file exists
+- Ensure the paths in `filtered_bams.txt` are correct
 - Create a file called `dog_chr_names.txt` containing a list of chromosomes in the reference genome.
-- Change the `--array=0-38` line in the SLURM header to match the **number of chromosomes** in `dog_chr_names.txt`
+- Change the `--array=0-37` line in the SLURM header to match the **number of chromosomes** in `dog_chr_names.txt`
 
-Then, run the script with: `sbatch 4_Variant_Calling.sh`
+Then, run the script with: `sbatch 5_Variant_Calling.sh`
 
-Output files:
+Output files per chromosome:
 
 | File | Description |
 |---|---|
 | `.vcf.gz` | Compressed variant call file |
 | `.vcf.gz.csi` | VCF index file |
+
+### 6. Variant Concatenation
+The VCF files generated per chromosome in the previous step need to be combined into one who variant file across the whole genome. To do this, `bcftools concat` is used.
+
+The script `
+
+
+### 7. Variant Filtering
+
 
 ## Notes
 The pipeline is designed to run on a SLURM based High Performance Computing (HPC) cluster.
@@ -135,3 +157,6 @@ The pipeline is designed to run on a SLURM based High Performance Computing (HPC
 - Chris Janschke
 - Shahwar Nadeem
 - Linghzi Li
+
+## References
+- 

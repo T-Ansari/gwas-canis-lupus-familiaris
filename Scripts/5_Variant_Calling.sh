@@ -10,7 +10,7 @@
 #SBATCH --error=/share/BioinfMSc/life4136_2526/rotation3/group1/TA/Scripts/Logs/slurm-%x-%j.err
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=mbxta9@nottingham.ac.uk
-#SBATCH --array=0-38
+#SBATCH --array=0-37
 
 # Load Conda Environment
 source $HOME/.bash_profile
@@ -22,14 +22,17 @@ set -euo pipefail
 #cd "$(dirname "$0")"
 
 #Create list of bam files
-#ls ../bam/*.rmd.bam > bam_list.txt
+#ls ../filtered_bam/*.bam > filtered_bams.txt
 
 # Setting file locations
 REF=../reference/reference.fna
 VCFDIR=../vcf
-BAMLIST=bam_list.txt
+BAMLIST=filtered_bams.txt
 
 mkdir -p "$VCFDIR"
+
+# Create list of dog chromosome names
+#grep  > dog_chr_names.txt
 
 # Load Chromosome names
 mapfile -t CHRS < dog_chr_names.txt
