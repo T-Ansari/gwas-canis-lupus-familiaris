@@ -1,12 +1,14 @@
 #!/bin/bash
+set -euo pipefail
+
 #SBATCH --partition=defq
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=64
 #SBATCH --mem=64g
 #SBATCH --time=01:00:00
 #SBATCH --job-name=variant_filter
-#SBATCH --output=variant_filter.out
-#SBATCH --error=variant_filter.err
+#SBATCH --output=Logs/variant_filter.out
+#SBATCH --error=Logs/variant_filter.err
 
 # Load Conda Environment
 #source $HOME/.bash_profile
@@ -14,12 +16,35 @@
 module load bcftools-uoneasy/1.18-GCC-13.2.0
 
 CONCATVCF=../vcf/dog.vcf.gz
+LOGFILE=../vcf/variant_filtering.log
+echo "-- Variant Filtering Log --" > "$LOGFILE"
+echo "Filtering VCF file: $CONCATVCF" >> "$LOGFILE"
 
-bcftools view -H "$CONCATVCF" --threads "$SLURM_CPUS_PER_TASK" | wc -l > ../vcf/merged.vcf.stats.txt
+#Create txt of number of vcfs after filtering
+RAW_COUNT=$(bcftools view -H "$CONCATVCF" --threads "$SLURM_CPUS_PER_TASK" | wc -l)
 
-bcftools filter -e 'QUAL<30 || DP<10' "$CONCATVCF" -Oz -o ../vcf/dog_filtered.vcf.gz --threads "$SLURM_CPUS_PER_TASK"
+#Filter the vcf files to Qual>30 and DP>10
+bcftools filter -e 'QUAL<30 || INFO/DP<10' "$CONCATVCF" -Oz -o ../vcf/dog_filtered_1.vcf.gz --threads "$SLURM_CPUS_PER_TASK"
+echo "Filtering for Quality and Depth complete" >> "$LOGFILE"
 
-bcftools view -H  ../vcf/dog_filtered.vcf.gz --threads "$SLURM_CPUS_PER_TASK" | wc -l > ../vcf/filtered.vcf.stats.txt
+#Filters to only biallelic SNPs and only variant SNPs
+bcftools view -m2 -M2 -v snps ../vcf/dog_filtered_1.vcf.gz -Oz -o ../vcf/dog_raw_filtered.vcf.gz --threads "$SLURM_CPUS_PER_TASK"
+echo "Filtering for biallelic sites complete" >> "$LOGFILE"
 
-bcftools view -m2 -M2 -v snps ../vcf/dog_filtered.vcf.gz -Oz -o dog_clean.vcf.gz --threads "$SLURM_CPUS_PER_TASK"
+#Index filtered vcf
+bcftools index ../vcf/dog_raw_filtered.vcf.gz --threads "$SLURM_CPUS_PER_TASK"
+echo "Indexing of filtered VCF complete" >> "$LOGFILE"
 
+#Create txt of number of SNPs after filtering
+FINAL_COUNT=$(bcftools view -H  ../vcf/dog_raw_filtered.vcf.gz --threads "$SLURM_CPUS_PER_TASK" | wc -l)
+
+# Removing extra files
+rm ../vcf/dog_filtered_1.vcf.gz
+echo "Temporary filtered VCF removed" >> "$LOGFILE"
+
+# Creating Statitics in Log file
+echo "" >> "$LOGFILE"
+echo "--- Statistics ---" >> "$LOGFILE"
+echo "Initial number of variants: $RAW_COUNT" >> "$LOGFILE"
+echo "Variants after raw filtering: $FINAL_COUNT" >> "$LOGFILE"
+echo >> "$LOGFILE"

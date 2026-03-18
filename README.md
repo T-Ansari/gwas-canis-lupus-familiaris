@@ -143,10 +143,41 @@ Output files per chromosome:
 ### 6. Variant Concatenation
 The VCF files generated per chromosome in the previous step need to be combined into one who variant file across the whole genome. To do this, `bcftools concat` is used.
 
-The script `
+The script [6_Variant_Concat.sh](6_Variant_Concat.sh) performs the following:
+- Combines all chromsome VCFs into one single dog genome VCF file
+- Indexes the genome VCF file
 
+**Before running the script:**
+- From the directory containing the scripts, run:
+`ls ../vcf/*.vcf.gz > vcf.list.txt`
+- Ensure that the `vcf.list.txt` file exists
+- Ensure the paths in `vcf.list.txt` are correct
+
+Then, run the script with: `sbatch 6_Variant_Concat.sh`
 
 ### 7. Variant Filtering
+The concatenated VCF file contains all SNPs across the whole genome. Further filtering must be performed in order to retain only high-quality SNPs. `bcftools filter` and `bcftools view` are used to remove low confidence sites and retain only biallelic SNP sites.
+
+The script [7_Variant_Filtering.sh](7_Variant_Filtering.sh) performs the following steps:
+1. Counts the number of raw variants in the concatenated VCF file
+2. Filters variants to retain only those with `QUAL>=30` and `INFO/DP>=10`
+3. Filters variants to retain only biallelic sites, SNPs only and true variant sites
+4. Counts the number of variants remaining after quality and depth filtering
+5. Indexes the final filtered VCF
+
+**Before running the script:**
+- Ensure that the concatenated VCF file `../vcf/dog.vcf.gz` exists
+- Ensure the quality and depth parameters match your preferences
+
+Then run the script with: `sbatch 7_Variant_Filtering.sh`
+
+
+Output files in `vcf` folder:
+| File | Description |
+| --- | --- |
+| variant_filtering.log | Log file containing information on the filtering script as well statistics on the number of variants pre and post filtering |
+| dog_raw_filtered.vcf.gz | Filtered raw vcf file |
+| .vcf.gz.csi | Index file for above filtered vcf file|
 
 
 ## Notes
