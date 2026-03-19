@@ -40,22 +40,22 @@ Alternatively, the modules can be loaded or installed individually using the ver
 ---
 
 ## Pipeline workflow
-The pipeline consists of several analysis steps, each requiring the results of the previous step. This ensures a reproducible workflow from start to finish. 
+The pipeline consists of several analysis steps, each requiring the results of the previous step. This ensures a reproducible workflow from start to finish. A diagram is available for viewing in the dropdown below. 
 
 The workflow begins with FASTQ files which undergo QC, trimming and alignment to a reference genome. Alignments are processed and filtered and then used to call variants which are combined across the genome and filtered to only high-quality single nucleotide polymorphisms (SNPs). The files are converted to PLINK formats and undergo QC once more before being used for GWAS analysis.
 
 All scripts are designed to be executed on a SLURM-based high performance cluster and need to be run in the order below. Some steps require manual prep (e.g. creation of a file list), so users **must read all instructions provided** with each step before execution.
 
 <details>
-<summary>Click to view workflow diagram</summary>
+<summary><b>Click to view workflow diagram</b></summary>
 
 ![GWAS Pipeline Workflow](Assets/R3.svg)
 
 </details>
 
-
-### 1. Fastp Read Trimming
-Quality control and read trimming is performed using `fastp` to remove contamination and low quality bases that may impact the alignment and further downstream analyses.
+---
+#### 1. Fastp Read Trimming
+The first step is to process and prepare your reads. Quality control and read trimming is performed using `fastp` to remove contamination and low quality bases that may impact the alignment and further downstream analyses.
 
 This script [1_Fastp.sh](1_Fastp.sh) will: 
 1. Create a folder called `trimmed_fastq` in the project directory.
@@ -84,8 +84,10 @@ Output files found in the `trimmed_fastq` folder (per sample):
 | `*.json` | Statistics summary |
 | `*.log` | Log output |
 
+---
+
 ### 2. Reference Genome Indexing
-The reference genome must be uncompressed and indexed before it can be used for alignment and variant calling.
+The reference genome must be uncompressed and indexed, using `bwa` and `samtools`, before it can be used for alignment and variant calling.
 
 The script [2_Index_Reference.sh](2_Index_Reference.sh) will:
 1.  Create a new folder called `reference` in the project directory.
@@ -108,9 +110,10 @@ Output files, found in the `reference` folder:
 | `reference.fna.sa` | BWA suffix array index file |
 | `reference.fna.fai` | Samtools FASTA index file |
 
+---
 
 ### 3. Alignment and BAM processing
-The trimmed reads are aligned to the reference genome using `BWA-MEM` and duplicates removed using `Picard`
+The trimmed reads are aligned to the reference genome, using `BWA-MEM`, and duplicates removed using `Picard`
 
 The script [3_Bam_Creation.sh](3_Bam_Creation.sh) performs several steps:
 1. Creates a new folder called `bam` in the project directory
@@ -136,8 +139,10 @@ Output files found in the `bam` folder (per sample):
 | `*.rmd.bam.bai` | BAM index file |
 | `*.metrics.txt` | Duplicate metrics from Picard |
 
+---
+
 ### 4. BAM Filtering
-BAM files need to be filtered to remove low quality regions, unmapped and secondary mapped regions and retain only high-quality mapped reads.
+BAM files need to be filtered to remove low quality regions, unmapped and secondary mapped regions and retain only high-quality mapped reads using `samtools`.
 
 The script [4_Bam_Filtering.sh](4_Bam_Filtering.sh) performs the following steps:
 1. Creates a folder called `filtered_bam` in the project directory
@@ -159,7 +164,7 @@ Output files found in the `filtered_bam` folder (per sample):
 | `*_filtered.bam.bai` | Index file for filtered BAM |
 | `*_filtered_flagstats.txt` | Summary statistics of alignment after filtering |
 
-
+---
 
 ### 5. Variant Calling
 Variants are identified and called using `bcftools mpileup` and `bcftools call`.
@@ -187,6 +192,8 @@ Output files found in the `vcf` folder (per chromosome):
 | `dog.CHR.vcf.gz` | Compressed VCF file for a single chromosome|
 | `dog.CHR.vcf.gz.csi` | VCF index file |
 
+---
+
 ### 6. Variant Concatenation
 The VCF files generated per chromosome in the previous step need to be combined into one whole variant file across the whole genome. To do this, `bcftools concat` is used.
 
@@ -208,6 +215,7 @@ Output files, found in the `vcf` folder:
 | `dog.vcf.gz` | Combined genome-wide VCF file containing all chromosome VCF data |
 | `dog.vcf.gz.csi` | VCF Index file |
 
+---
 
 ### 7. Variant Filtering
 The concatenated VCF file contains all SNPs across the whole genome. Further filtering is performed to retain only high-quality SNPs. `bcftools filter` and `bcftools view` are used to remove low confidence sites and retain only biallelic SNPs.
@@ -232,6 +240,8 @@ Output files in `vcf` folder:
 | `dog_raw_filtered.vcf.gz` | Filtered raw vcf file |
 | `dog_raw_filtered.vcf.gz.csi` | Index file for above filtered vcf file|
 | `variant_filtering.log` | Log file containing information on the filtering script as well statistics on the number of variants pre and post filtering |
+
+---
 
 ### 8. PLINK Preparation
 `PLINK` requires files to be in a specific binary format for processing, so a conversion must be done from VCF files to ones that PLINK can handle. Furthermore, some quality control needs to be conducted before parsing the files to PLINK for the GWAS.
@@ -266,6 +276,8 @@ The pipeline is designed to run on a SLURM based High Performance Computing (HPC
 | [BCFTools](https://github.com/samtools/bcftools) | 1.18 | Variant calling and VCF file generation |
 | [PLINK](https://github.com/chrchang/plink-ng) | 2.0 | Genotype filtering and quality control |
 
+See [References](#references) for the full citations of the software used in this workflow.
+
 ---
 
 ## Acknowledgements
@@ -277,4 +289,8 @@ The pipeline is designed to run on a SLURM based High Performance Computing (HPC
 ---
 
 ## References
-- 
+- Chang, C.C. et al. (2015) ‘Second-generation PLINK: rising to the challenge of larger and richer datasets’, GigaScience, 4(1), pp. s13742-015-0047–8. Available at: https://doi.org/10.1186/s13742-015-0047-8.
+- Chen, S. et al. (2018) ‘fastp: an ultra-fast all-in-one FASTQ preprocessor’, Bioinformatics, 34(17), pp. i884–i890. Available at: https://doi.org/10.1093/bioinformatics/bty560.
+- Danecek, P. et al. (2021) ‘Twelve years of SAMtools and BCFtools.’, GigaScience, 10(2). Available at: https://doi.org/10.1093/gigascience/giab008.
+- Li, H. (2013) ‘Aligning sequence reads, clone sequences and assembly contigs with BWA-MEM’, arXiv preprint arXiv:1303.3997 [Preprint].
+- ‘Picard toolkit’ (2019) Broad Institute, GitHub repository. Broad Institute. Available at: https://broadinstitute.github.io/picard/.
