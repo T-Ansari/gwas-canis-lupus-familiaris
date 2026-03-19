@@ -17,7 +17,7 @@ This repository contains a reproducible bioinformatics pipeline to perform a gen
    - [7. Variant Filtering](#7-variant-filtering)  
    - [8. PLINK Preparation](#8-plink-preparation)  
 4. [Notes](#notes)  
-   - [Modules Used](#modules-used)  
+   - [Tools Used](#tools-used)  
 5. [Acknowledgements](#acknowledgements)  
 6. [References](#references)
 
@@ -30,7 +30,7 @@ This repository contains a reproducible bioinformatics pipeline to perform a gen
 - Conda or Miniconda installed - [See conda documents](https://docs.conda.io/projects/conda/en/latest/index.html)
 
 ### Environment Creation
-The scripts in this repository use a number of tools listed in the [Modules Used](#modules-used) section below. 
+The scripts in this repository use a number of tools listed in the [Tools Used](#tools-used) section below. 
 To ensure reproducibility, a conda environment file [environment.yml](environment.yml) has been provided, with the correct versions and dependencies.
 
 To create the environment, run: `conda env create -f environment.yml`
@@ -265,7 +265,7 @@ Output files found in the `plink` folder:
 ## Notes
 The pipeline is designed to run on a SLURM based High Performance Computing (HPC) cluster. The full list of modules used and version information is provided below.
 
-### Tools and Modules Used
+### Tools Used
 
 | Software | Version | Purpose |
 | ----- | ----- | ----- |
