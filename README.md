@@ -265,7 +265,7 @@ Output files found in the `plink` folder:
 ## Notes
 The pipeline is designed to run on a SLURM based High Performance Computing (HPC) cluster. The full list of modules used and version information is provided below.
 
-### Modules Used
+### Tools and Modules Used
 
 | Software | Version | Purpose |
 | ----- | ----- | ----- |
