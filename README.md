@@ -1,10 +1,27 @@
-# LIFE4136 - *Canis lupus familiaris* Genome Wide Association Study
+# LIFE4136 - *Canis lupus familiaris* Genome-Wide Association Study
 
 ## Overview
-This repository contains a reproducible bioinformatics pipeline to perform a genome wide association study (GWAS) on *Canis lupus familiaris* sequencing data. 
+This repository contains a reproducible bioinformatics pipeline to perform a genome-wide association study (GWAS) on *Canis lupus familiaris* sequencing data. 
 
 ---
+## Table of Contents
+1. [Overview](#overview)  
+2. [Prerequisites](#prerequisites)  
+3. [Pipeline Workflow](#pipeline-workflow)  
+   - [1. Fastp Read Trimming](#1-fastp-read-trimming)  
+   - [2. Reference Genome Indexing](#2-reference-genome-indexing)  
+   - [3. Alignment and BAM Processing](#3-alignment-and-bam-processing)  
+   - [4. BAM Filtering](#4-bam-filtering)  
+   - [5. Variant Calling](#5-variant-calling)  
+   - [6. Variant Concatenation](#6-variant-concatenation)  
+   - [7. Variant Filtering](#7-variant-filtering)  
+   - [8. PLINK Preparation](#8-plink-preparation)  
+4. [Notes](#notes)  
+   - [Modules Used](#modules-used)  
+5. [Acknowledgements](#acknowledgements)  
+6. [References](#references)
 
+---
 ## Prerequisites
 
 ### Tools and Files required
@@ -13,17 +30,17 @@ This repository contains a reproducible bioinformatics pipeline to perform a gen
 - Conda or Miniconda installed - [See conda documents](https://docs.conda.io/projects/conda/en/latest/index.html)
 
 ### Environment Creation
-The scripts in this repository use a number of tools listed in the [Modules Used](###modules-used) section below. 
+The scripts in this repository use a number of tools listed in the [Modules Used](#modules-used) section below. 
 To ensure reproducibility, a conda environment file [environment.yml](environment.yml) has been provided, with the correct versions and dependencies.
 
-To create the  environment, run: `conda env create -f environment.yml`
+To create the environment, run: `conda env create -f environment.yml`
 
-Alternatively, the modules can be loaded or installed individually using the version information in the [notes](#notes) below, however you will be required to modify the scripts to accomodate this.
+Alternatively, the modules can be loaded or installed individually using the version information in the [notes](#notes) below, however you will be required to modify the scripts to accommodate this.
 
 ---
 
 ## Pipeline workflow
-The pipeline consists of several analysis steps, that require the results of the steps before each one. 
+The pipeline consists of several analysis steps, each requiring the results of the previous step. 
 
 Please ensure the conda environment has been created before attempting these steps. While every effort has been made to make this easy, some steps may require extra work to ensure they work with your system and data.
 
@@ -32,15 +49,15 @@ Please ensure the conda environment has been created before attempting these ste
 Quality control and read trimming is performed using `fastp` to remove contamination and low quality bases that may impact the alignment and further downstream analyses.
 
 This script [1_Fastp.sh](1_Fastp.sh) will: 
-1. Create a folder called `trimmed_fastq` in the folder containing the scripts folder.
+1. Create a folder called `trimmed_fastq` in the project directory.
 2. Remove low quality bases
-3. Remove adapater contamination sequences
+3. Remove adapter contamination sequences
 4. Remove very short reads
 
 **Before running the script:**
-- Ensure fastq reads are in paired-end gzipped fastq format, ending with: `_1.fastq.gz` and `_2.fastq.gz`
+- Ensure FASTQ reads are in paired-end gzipped format, ending with: `_1.fastq.gz` and `_2.fastq.gz`
 - From the directory containing the scripts, run: 
-`ls "PATH_TO_YOUR_FASTQ_FILES/*_1.fastq.gz > names.txt`
+`ls PATH_TO_YOUR_FASTQ_FILES/*_1.fastq.gz > names.txt`
 - Ensure that the `names.txt` file exists
 - Ensure the paths in `names.txt` are correct
 - Change the `--array=0-114` line in the SLURM header to match the number of lines in `names.txt`
@@ -62,8 +79,8 @@ Output files found in the `trimmed_fastq` folder (per sample):
 The reference genome must be uncompressed and indexed before it can be used for alignment and variant calling.
 
 The script [2_Index_Reference.sh](2_Index_Reference.sh) will:
-1.  Create a new folder called `reference` in the directory containing the scripts folder.
-2.  Unzip the reference genome into the new folder
+1.  Create a new folder called `reference` in the project directory.
+2.  Decompress the reference genome into the new folder
 3.  Perform `BWA` indexing
 4.  Perform `samtools faidx` indexing
 
@@ -77,22 +94,22 @@ Output files, found in the `reference` folder:
 | --- | --- |
 | `reference.fna` | Unzipped reference file created from the input `.fna.gz` reference file |
 | `reference.fna.amb` | BWA index file containing ambiguous base information |
-| `reference.fna.bwt` | BWA index file containing sequence annotation information |
+| `reference.fna.bwt` | BWA index file containing transform index information |
 | `reference.fna.pac` | BWA packed DNA sequence file |
 | `reference.fna.sa` | BWA suffix array index file |
 | `reference.fna.fai` | Samtools FASTA index file |
 
 
 ### 3. Alignment and BAM processing
-The trimmed reads are alined to the reference genome using `BWA-MEM` and duplicates removed using `Picard`
+The trimmed reads are aligned to the reference genome using `BWA-MEM` and duplicates removed using `Picard`
 
 The script [3_Bam_Creation.sh](3_Bam_Creation.sh) performs several steps:
-1. Creates a new folder called `bam` in the directory containing the scripts folder.
-2. Aligns trimmed reads to the reference genome.
-3. Convert SAM files outputted by alignment to BAM files.
-4. Sort the BAM files.
-5. Remove duplicate reads using Picard.
-6. Index the resulting BAM files.
+1. Creates a new folder called `bam` in the project directory
+2. Aligns trimmed reads to the reference genome
+3. Convert SAM files generated by alignment into BAM format
+4. Sorts the BAM files by coordinates
+5. Remove duplicate reads using Picard
+6. Index the resulting BAM files
 
 **Before running the script:**
 - From the directory containing the scripts, run:
@@ -114,16 +131,16 @@ Output files found in the `bam` folder (per sample):
 BAM files need to be filtered to remove low quality regions, unmapped and secondary mapped regions and retain only high-quality mapped reads.
 
 The script [4_Bam_Filtering.sh](4_Bam_Filtering.sh) performs the following steps:
-1. Creates a folder called `filtered_bam` in the directory containing the scripts folder
+1. Creates a folder called `filtered_bam` in the project directory
 2. Removes unmapped reads
 3. Removes secondary mapped regions
-4. Remove reads with a quality score below 20
+4. Remove reads with a mapping quality score below 20
 5. Calculates alignment statistics 
 
 **Before running the script:**
 - From the directory containing the scripts, run:
 `ls ../bam/*.bam > bam_list.txt`
-- Ensure that the `filtered_bams.txt` file exists
+- Ensure that the `bam_list.txt` file exists
 - Change the `--array=0-100` line in the SLURM header to match the **number of BAMs** in `bam_list.txt`
 
 Output files found in the `filtered_bam` folder (per sample):
@@ -131,7 +148,7 @@ Output files found in the `filtered_bam` folder (per sample):
 | --- | --- |
 | `*_filtered.bam` | Filtered BAM file containing the high-quality mapped reads |
 | `*_filtered.bam.bai` | Index file for filtered BAM |
-| `*_filtered_flgastats.txt` | Summary statistics of alignment after filtering |
+| `*_filtered_flagstats.txt` | Summary statistics of alignment after filtering |
 
 
 
@@ -139,9 +156,9 @@ Output files found in the `filtered_bam` folder (per sample):
 Variants are identified and called using `bcftools mpileup` and `bcftools call`.
 
 The script [5_Variant_Calling.sh](5_Variant_Calling.sh) performs the following steps:
-1. Creates a folder called `vcf` in the directory containing the scripts folder
+1. Creates a folder called `vcf` in the project directory
 2. Generates genotype likelihoods with `bcftools mpileup`
-3. Calls variants, with a minimum quality of 30, using `bcftools call`
+3. Calls variants, on reads with a minimum quality of 30, using `bcftools call`
 4. Indexes each VCF file 
 
 **Before running the script:**
@@ -162,10 +179,10 @@ Output files found in the `vcf` folder (per chromosome):
 | `dog.CHR.vcf.gz.csi` | VCF index file |
 
 ### 6. Variant Concatenation
-The VCF files generated per chromosome in the previous step need to be combined into one who variant file across the whole genome. To do this, `bcftools concat` is used.
+The VCF files generated per chromosome in the previous step need to be combined into one whole variant file across the whole genome. To do this, `bcftools concat` is used.
 
 The script [6_Variant_Concat.sh](6_Variant_Concat.sh) performs the following:
-- Combines all chromsome VCFs into one single dog genome VCF file
+- Combines all chromosome VCFs into one single dog genome VCF file
 - Indexes the genome VCF file
 
 **Before running the script:**
@@ -184,7 +201,7 @@ Output files, found in the `vcf` folder:
 
 
 ### 7. Variant Filtering
-The concatenated VCF file contains all SNPs across the whole genome. Further filtering must be performed in order to retain only high-quality SNPs. `bcftools filter` and `bcftools view` are used to remove low confidence sites and retain only biallelic SNP sites.
+The concatenated VCF file contains all SNPs across the whole genome. Further filtering is performed to retain only high-quality SNPs. `bcftools filter` and `bcftools view` are used to remove low confidence sites and retain only biallelic SNPs.
 
 The script [7_Variant_Filtering.sh](7_Variant_Filtering.sh) performs the following steps:
 1. Counts the number of raw variants in the concatenated VCF file
@@ -208,10 +225,10 @@ Output files in `vcf` folder:
 | `variant_filtering.log` | Log file containing information on the filtering script as well statistics on the number of variants pre and post filtering |
 
 ### 8. PLINK Preparation
-`PLINK` requires files to be in a specific format for processing, so a conversion must be done from VCF files to ones that PLINK can handle. Furthermore, some quality control needs to be conducted before parsing the files to PLINK for the GWAS.
+`PLINK` requires files to be in a specific binary format for processing, so a conversion must be done from VCF files to ones that PLINK can handle. Furthermore, some quality control needs to be conducted before parsing the files to PLINK for the GWAS.
 
 The script [8_Plink_Prep.sh](8_Plink_Prep.sh) performs a number of steps:
-1. Creates a folder called `plink` in the directory containing the scripts folder
+1. Creates a folder called `plink` in project directory
 2. Converts the filtered VCF file into .bed, .bim and .fam files.
 3. Generates missingness data for the genotypes across individuals and SNPs.
 
@@ -220,14 +237,14 @@ Output files found in the `plink` folder:
 | --- | --- |
 | `dog_raw.bed` | Binary genotype file containing SNPs |
 | `dog_raw.bim`| Variant information file |
-| `dog_raw.fam` | Metadata containing IDs, phenotype data etc.
+| `dog_raw.fam` | Metadata containing IDs, phenotype data etc. |
 | `dog_missing.imiss` | Individual missingness statistics |
-| `dog_mising.lmiss` | SNP missingness statistics |
+| `dog_missing.lmiss` | SNP missingness statistics |
 
 ---
 
 ## Notes
-The pipeline is designed to run on a SLURM based High Performance Computing (HPC) cluster. The full list of modules used and version information is below.
+The pipeline is designed to run on a SLURM based High Performance Computing (HPC) cluster. The full list of modules used and version information is provided below.
 
 ### Modules Used
 
@@ -238,7 +255,7 @@ The pipeline is designed to run on a SLURM based High Performance Computing (HPC
 | [Samtools](https://github.com/samtools/samtools) | 1.18 | BAM file processing, indexing and sorting |
 | [Picard](https://github.com/broadinstitute/picard) | 3.0.0 | Removal of duplicate reads from BAM files |
 | [BCFTools](https://github.com/samtools/bcftools) | 1.18 | Variant calling and VCF file generation |
-| [PLINK](https://github.com/chrchang/plink-ng) | 2.0 | Genotype Filtering |
+| [PLINK](https://github.com/chrchang/plink-ng) | 2.0 | Genotype filtering and quality control |
 
 ---
 
