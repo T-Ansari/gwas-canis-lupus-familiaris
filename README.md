@@ -269,6 +269,7 @@ The pipeline is designed to run on a SLURM based High Performance Computing (HPC
 
 | Software | Version | Purpose |
 | ----- | ----- | ----- |
+| [conda](https://docs.conda.io) | 25.11.1 | Environment and package management |
 | [fastp](https://github.com/OpenGene/fastp) | 0.23.4 | Read trimming and quality control |
 | [BWA](https://github.com/lh3/bwa) | 0.7.17 | Alignment of sequences to reference genome | 
 | [Samtools](https://github.com/samtools/samtools) | 1.18 | BAM file processing, indexing and sorting |
@@ -289,6 +290,7 @@ See [References](#references) for the full citations of the software used in thi
 ---
 
 ## References
+- Anaconda, Inc. (2024) ‘Conda’. Available at: https://docs.conda.io/.
 - Chang, C.C. et al. (2015) ‘Second-generation PLINK: rising to the challenge of larger and richer datasets’, GigaScience, 4(1), pp. s13742-015-0047–8. Available at: https://doi.org/10.1186/s13742-015-0047-8.
 - Chen, S. et al. (2018) ‘fastp: an ultra-fast all-in-one FASTQ preprocessor’, Bioinformatics, 34(17), pp. i884–i890. Available at: https://doi.org/10.1093/bioinformatics/bty560.
 - Danecek, P. et al. (2021) ‘Twelve years of SAMtools and BCFtools.’, GigaScience, 10(2). Available at: https://doi.org/10.1093/gigascience/giab008.
