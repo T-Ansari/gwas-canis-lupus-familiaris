@@ -42,16 +42,19 @@ Alternatively, the modules can be loaded or installed individually using the ver
 ## Pipeline workflow
 The pipeline consists of several analysis steps, each requiring the results of the previous step. This ensures a reproducible workflow from start to finish. A diagram is available for viewing in the dropdown below. 
 
-The workflow begins with FASTQ files which undergo QC, trimming and alignment to a reference genome. Alignments are processed and filtered and then used to call variants which are combined across the genome and filtered to only high-quality single nucleotide polymorphisms (SNPs). The files are converted to PLINK formats and undergo QC once more before being used for GWAS analysis.
-
-All scripts are designed to be executed on a SLURM-based high performance cluster and need to be run in the order below. Some steps require manual prep (e.g. creation of a file list), so users **must read all instructions provided** with each step before execution.
-
 <details>
 <summary><b>Click to view workflow diagram</b></summary>
 
 ![GWAS Pipeline Workflow](Assets/R3.svg)
 
 </details>
+<br/>
+
+The workflow begins with FASTQ files which undergo QC, trimming and alignment to a reference genome. Alignments are processed and filtered and then used to call variants which are combined across the genome and filtered to only high-quality single nucleotide polymorphisms (SNPs). The files are converted to PLINK formats and undergo QC once more before being used for GWAS analysis.
+
+All scripts are designed to be executed on a SLURM-based high performance cluster and need to be run in the order below. Some steps require manual prep (e.g. creation of a file list), so users **must read all instructions provided** with each step before execution.
+
+
 
 ---
 #### 1. Fastp Read Trimming
