@@ -45,7 +45,7 @@ The pipeline consists of several analysis steps, each requiring the results of t
 <details>
 <summary><b>Click to view workflow diagram</b></summary>
 
-![GWAS Pipeline Workflow](Assets/R3.svg)
+![GWAS Pipeline Workflow](Assets/Workflow_Diagram.svg)
 
 </details>
 <br/>
