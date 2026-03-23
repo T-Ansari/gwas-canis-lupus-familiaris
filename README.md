@@ -278,7 +278,7 @@ The pipeline is designed to run on a SLURM based High Performance Computing (HPC
 | [Samtools](https://github.com/samtools/samtools) | 1.18 | BAM file processing, indexing and sorting |
 | [Picard](https://github.com/broadinstitute/picard) | 3.0.0 | Removal of duplicate reads from BAM files |
 | [BCFTools](https://github.com/samtools/bcftools) | 1.18 | Variant calling and VCF file generation |
-| [PLINK](https://github.com/chrchang/plink-ng) | 2.0 | Genotype filtering and quality control |
+| [PLINK](https://github.com/chrchang/plink-ng) | 1.9 | Genotype filtering and quality control |
 
 See [References](#references) for the full citations of the software used in this workflow.
 
