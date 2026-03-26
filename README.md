@@ -75,7 +75,7 @@ This script [1_Fastp.sh](Scripts/1_Fastp.sh) will:
 - Change the `--array=0-114` line in the SLURM header to match the number of lines in `names.txt`
 - Ensure each `_1.fastq.gz` file has a complementary `_2.fastq.gz` file
 
-Then, run this script using: `sbatch 1_Fastp.sh`
+>Then, run this script using: `sbatch 1_Fastp.sh`
 
 Output files found in the `trimmed_fastq` folder (per sample):
 
@@ -101,7 +101,7 @@ The script [2_Index_Reference.sh](Scripts/2_Index_Reference.sh) will:
 **Before running the script:**
 Edit the line `REF_GZ=PATH/TO/YOUR/REFERENCE/reference.fna.gz` in [2_Index_Reference.sh](Scripts/2_Index_Reference.sh) to point your reference genome file.
 
-Then, run the script with: `sbatch 2_Index_Reference.sh`
+>Then, run the script with: `sbatch 2_Index_Reference.sh`
 
 Output files, found in the `reference` folder:
 | File | Description |
@@ -133,7 +133,7 @@ The script [3_Bam_Creation.sh](Scripts/3_Bam_Creation.sh) performs several steps
 - Ensure the paths in `trims.txt` are correct
 - Change the `--array=0-114` line in the SLURM header to match the number of lines in `trims.txt`
 
-Then, run the script with: `sbatch 3_Bam_Creation.sh`
+>Then, run the script with: `sbatch 3_Bam_Creation.sh`
 
 Output files found in the `bam` folder (per sample):
 | File | Description |
@@ -159,6 +159,8 @@ The script [4_Bam_Filtering.sh](Scripts/4_Bam_Filtering.sh) performs the followi
 `ls ../bam/*.bam > bam_list.txt`
 - Ensure that the `bam_list.txt` file exists
 - Change the `--array=0-100` line in the SLURM header to match the **number of BAMs** in `bam_list.txt`
+
+>Then, run the script with: `sbatch 4_Bam_Filtering.sh`
 
 Output files found in the `filtered_bam` folder (per sample):
 | File | Description |
@@ -186,7 +188,7 @@ The script [5_Variant_Calling.sh](Scripts/5_Variant_Calling.sh) performs the fol
 - Create a file called `canis_chr_names.txt` containing a list of chromosomes in the reference genome, each on a new line (e.g. NC_049222.1)
 - Change the `--array=0-37` line in the SLURM header to match the **number of chromosomes** in `canis_chr_names.txt`
 
-Then, run the script with: `sbatch 5_Variant_Calling.sh`
+>Then, run the script with: `sbatch 5_Variant_Calling.sh`
 
 Output files found in the `vcf` folder (per chromosome):
 
@@ -210,7 +212,7 @@ The script [6_Variant_Concat.sh](Scripts/6_Variant_Concat.sh) performs the follo
 - Ensure that the `vcf.list.txt` file exists
 - Ensure the paths in `vcf.list.txt` are correct
 
-Then, run the script with: `sbatch 6_Variant_Concat.sh`
+>Then, run the script with: `sbatch 6_Variant_Concat.sh`
 
 Output files, found in the `vcf` folder:
 | File | Description |
@@ -234,7 +236,7 @@ The script [7_Variant_Filtering.sh](Scripts/7_Variant_Filtering.sh) performs the
 - Ensure that the concatenated VCF file `../vcf/canis.vcf.gz` exists
 - Ensure the quality and depth parameters match your preferences
 
-Then run the script with: `sbatch 7_Variant_Filtering.sh`
+>Then run the script with: `sbatch 7_Variant_Filtering.sh`
 
 
 Output files in `vcf` folder:
@@ -255,7 +257,7 @@ The script [8a_Plink_Prep.sh](Scripts/8a_Plink_Prep.sh) performs a number of ste
 2. Converts the filtered VCF file into .bed, .bim and .fam files.
 3. Generates missingness data for the genotypes across individuals and SNPs.
 
-Run the script with: `sbatch 8a_Plink_Prep.sh`
+>Run the script with: `sbatch 8a_Plink_Prep.sh`
 
 Output files found in the `plink` folder:
 | File | Description |
@@ -272,11 +274,11 @@ The script [8b_Missingness.r](Scripts/8b_Missingness.r) uses the missingness sta
 **Before running the script:**
 - Ensure that the file paths point to your `.imiss` and `.lmiss` files
 
-Then run the script in `R` and interpret the histograms.
+>Then run the script in `R` and interpret the histograms.
 
-How to interpret the histograms:
-- High missingness in Samples should be removed with `--mind`
-- High missingness in SNPs should be removed with `--geno`
+**How to interpret the histograms:**
+- High frequency of missingness in Samples should be removed with `--mind`
+- High frequency of missingness in SNPs should be removed with `--geno`
 
 
 #### C. Quality Control
@@ -286,6 +288,8 @@ This includes the following:
 1. Removal of individuals with high missing genotype rates (`--mind`)
 2. Removal of SNPS with high missingness across samples (`--geno`)
 3. Filtering of rare variants with a minor allele frequency <0.5 (`--maf`)
+
+>Then, run the script with: `sbatch 8c_PLINK_QC.sh`
 
 Output files found in the `plink` folder:
 | File | Description |
@@ -298,6 +302,61 @@ Output files found in the `plink` folder:
 ---
 
 ### 9. GWAS
+This step performs the genome-wide association study using `PLINK`, as well as a number of other steps.
+
+The script [9_GWAS.sh](Scripts/9_GWAS.sh) performs the following steps:
+1. Creates folders called `prune` and `gwas` in the project directory
+2. Performs an initial GWAS that isn't corrected for population structure
+3. Performs LD pruning to remove breed related associations
+4. Performs PCA on the pruned SNP dataset to determine population structure
+5. Repeats the GWAS using the top 3 principal components as covariates
+
+**Before running the script:**
+- Ensure that the QC filtered PLINK files exist (`canis_qc.bed`, `.bim` and `.fam`)
+- Ensure that the phenotypes file `canis_phenotypes.txt` exists in the same directory as the script
+- Ensure that the phenotype file contains the correct sample IDs and phennotype values (Three columns in order: `FamilyID`, `SampleID`, `Phenotype`)
+
+>Then, run the script with: `9_GWAS.sh`
+
+Output files found in the `gwas` and `prune` folders:
+| File | Description |
+| --- | --- |
+| `gwas/gwas_canis_uncorrected.assoc.linear` | Results of the initial uncorrected GWAS |
+| `prune/prune.prune.in` | SNPs retained after LD pruning |
+| `prune/prune.prune.out` | SNPs removed during LD pruning |
+| `prune/pca20.eigenvec` | Principal component scores for each sample |
+| `prune/pca20.eigenval` | Variance explained by each principal component |
+| `gwas/gwas_canis_pca3.assoc.linear` | GWAS results corrected for population structure using the PCs |
+| `*.log` | PLINK log files |
+
+---
+### 10. Visualisation and further analysis
+The final step is to visualise the results of the previous step using a Manhattan Plot, which shows the significance of each SNPs association with the phenotype across the genome.  
+
+The Manhattan Plot shows:
+- Each SNP plotted across the genome
+- Significance of association between each SNP and the phenotype measured
+
+A peak in the manhatttan plot represent SNPs in that region of the genome, with higher association for the phenotype.
+
+The script [10_Visualisation.r](Scripts/10_Visualisation.r) performs the following steps:
+1. Loads GWAS results generated by PLINK
+2. Converts chromosome names into integers for plotting
+3. Filters to only additive effects
+4. Generates a Manhattan Plot of genome-wide association results
+5. Outputs a list of the most significant SNPs for further analysis
+
+**Before running the script:**
+- Update the `FILEPATH` variable to have the path to your .assoc.linear file
+- Ensure the `qqman` and `tidyverse` packages are installed
+
+>Then run the script in `R`.
+
+Output files in the script directory:
+| File | Description |
+| --- | --- |
+| `Canis_Manhattan.png` | Manhattan plot showing genome-wide SNP associations with body weight |
+| Console output | Top SNPs ranked by statistical significance (lowest p-values) |
 
 ---
 

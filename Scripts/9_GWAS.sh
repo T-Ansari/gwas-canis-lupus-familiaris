@@ -40,6 +40,7 @@ plink --bfile ../plink/canis_qc \
  --out $PRUNEDIR/pca20
 
 # Perform GWAS Again with PCA covariates
+# Remove --linear if measuring qualitative traits and add --logistic
 plink --bfile ../plink/canis_qc \
  --allow-extra-chr \
  --allow-no-sex \
