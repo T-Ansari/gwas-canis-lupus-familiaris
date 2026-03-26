@@ -1,6 +1,4 @@
 #!/bin/bash
-set -euo pipefail
-
 #SBATCH --partition=defq
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=64
@@ -11,9 +9,8 @@ set -euo pipefail
 #SBATCH --error=Logs/variant_filter.err
 
 # Load Conda Environment
-#source $HOME/.bash_profile
-#conda activate CanisGWAS
-module load bcftools-uoneasy/1.18-GCC-13.2.0
+source $HOME/.bash_profile
+conda activate CanisGWAS
 
 CONCATVCF=../vcf/dog.vcf.gz
 LOGFILE=../vcf/variant_filtering.log
@@ -48,3 +45,6 @@ echo "--- Statistics ---" >> "$LOGFILE"
 echo "Initial number of variants: $RAW_COUNT" >> "$LOGFILE"
 echo "Variants after raw filtering: $FINAL_COUNT" >> "$LOGFILE"
 echo >> "$LOGFILE"
+
+# Deactivate conda environment
+conda deactivate

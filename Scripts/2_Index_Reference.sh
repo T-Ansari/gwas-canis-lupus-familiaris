@@ -15,7 +15,7 @@ conda activate CanisGWAS
 # Reference paths
 REF_GZ=PATH/TO/YOUR/REFERENCE/reference.fna.gz
 REF_DIR=../reference
-REF="$REF_DIR/reference.fna"
+REF="$REF_DIR/canis_reference.fna"
 
 # Create reference directory if it doesn't exist
 mkdir -p "$REF_DIR"
@@ -30,3 +30,6 @@ bwa index "$REF"
 samtools faidx "$REF"
 
 echo "Reference unzipped and indexed"
+
+# Deactivate conda environment
+conda deactivate

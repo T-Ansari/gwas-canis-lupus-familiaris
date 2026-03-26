@@ -47,3 +47,6 @@ fastp \
  &> "$OUTDIR/${SAMPLE}.log"
 
 echo "Finished fastp for $SAMPLE"
+
+# Deactivate conda environment
+conda deactivate

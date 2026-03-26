@@ -16,14 +16,10 @@
 source $HOME/.bash_profile
 conda activate CanisGWAS
 
-# Set current directory to script location (for relative paths)
-#cd "$(dirname "$0")"
-
 # Setting file locations
-REF=../reference/reference.fna
+REF=../reference/canis_reference.fna
 TRIMDIR=../trimmed_fastq
 BAMDIR=../bam
-
 mkdir -p "$BAMDIR"
 
 # Create list of fastq files (Run once before script)
@@ -69,3 +65,5 @@ rm "$SORTBAM"
 
 echo "Finished BAM processing for $SAMPLE"
 
+# Deactivate conda environment
+conda deactivate

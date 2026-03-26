@@ -15,11 +15,10 @@
 source $HOME/.bash_profile
 
 # Activate conda environment
-conda activate gwas
+conda activate CanisGWAS
 
 # Create bamlist file
 #ls ../bam/*.bam > bam_list.txt
-
 
 # Load sample names into an array
 mapfile -t ROOTS < bam_list.txt
@@ -53,5 +52,5 @@ samtools index $OUTDIR/${SAMPLE}_filtered.bam
 # Calculate alignment statistics post-filter
 samtools flagstat $OUTDIR/${SAMPLE}_filtered.bam > $OUTDIR/${SAMPLE}_filtered_flagstats.txt
 
-# deactivate conda environment
-conda deactivate 
+# Deactivate conda environment
+conda deactivate

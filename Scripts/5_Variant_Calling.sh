@@ -25,7 +25,7 @@ set -euo pipefail
 #ls ../filtered_bam/*.bam > filtered_bams.txt
 
 # Setting file locations
-REF=../reference/reference.fna
+REF=../reference/canis_reference.fna
 VCFDIR=../vcf
 BAMLIST=filtered_bams.txt
 
@@ -63,3 +63,5 @@ bcftools index "$OUTFILE"
 
 echo "Finished Variant Calling for $CHR"
 
+# Deactivate conda environment
+conda deactivate

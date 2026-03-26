@@ -9,9 +9,11 @@
 #SBATCH --error=index_ref.err
 
 # Load Conda Environment
-#source $HOME/.bash_profile
-#conda activate CanisGWAS
-module load bcftools-uoneasy/1.18-GCC-13.2.0
+source $HOME/.bash_profile
+conda activate CanisGWAS
 
 bcftools concat --file-list vcf.list.txt -Oz --output ../vcf/dog.vcf.gz --threads "$SLURM_CPUS_PER_TASK"
 bcftools index ../vcf/dog.vcf.gz --threads "$SLURM_CPUS_PER_TASK"
+
+# Deactivate conda environment
+conda deactivate
