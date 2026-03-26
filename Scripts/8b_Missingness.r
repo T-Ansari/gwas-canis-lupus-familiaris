@@ -1,6 +1,14 @@
-########################################
-#    Script to calculate missingness   #
-########################################
+####################################################################
+#                                                                  #
+#        Title: Missingness Visualisation                          #
+#                                                                  #
+#        Author: Tahir Ansari                                      #
+#        Date:  25 March 2026                                      #
+#                                                                  #
+#        Description: Script for visualising missingness data      #
+#                                                                  #
+#                                                                  #
+####################################################################
 
 # Load missingness files
 imiss <- read.table("PATH/TO/YOUR/FILES/dog_missing.imiss", header=TRUE)
