@@ -5,25 +5,28 @@
 #SBATCH --mem=64g
 #SBATCH --time=01:00:00
 #SBATCH --job-name=plink_prep
-#SBATCH --output=Logs/plink_prep.out
-#SBATCH --error=Logs/plink_prep.err
+#SBATCH --output=Logs/slurm-%x-%j.out
+#SBATCH --error=Logs/slurm-%x-%j.err
 
 # Load Conda Environment
-#source $HOME/.bash_profile
-#conda activate CanisGWAS
-module load plink-uoneasy/2.00a3.7-foss-2023a
+source $HOME/.bash_profile
+conda activate CanisGWAS
+
 
 # Defining Output location
 OUTDIR=../plink
 mkdir -p $OUTDIR
 
-plink --bfile fish_raw \
+# Perform PLINK QC filtering
+# Removes variants with >30% missing data, individuals with >60% missing data
+# Removes variants with MAF <0.5
+plink --bfile canis_raw \
  --allow-extra-chr \
  --geno 0.3 \
  --mind 0.6 \
  --maf 0.5 \
  --make-bed \
- --out $OUTDIR/fish_qc
+ --out $OUTDIR/canis_qc
 
 # Deactivate conda environment
 conda deactivate

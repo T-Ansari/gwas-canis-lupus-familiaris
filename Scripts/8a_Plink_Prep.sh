@@ -5,8 +5,8 @@
 #SBATCH --mem=64g
 #SBATCH --time=01:00:00
 #SBATCH --job-name=plink_prep
-#SBATCH --output=Logs/plink_prep.out
-#SBATCH --error=Logs/plink_prep.err
+#SBATCH --output=Logs/slurm-%x-%j.out
+#SBATCH --error=Logs/slurm-%x-%j.err
 
 # Load Conda Environment
 source $HOME/.bash_profile
@@ -17,17 +17,17 @@ OUTDIR=../plink
 mkdir -p $OUTDIR
 
 # Convert VCF to PLINK bed,bim, fam format 
-plink --vcf ../vcf/dog_raw_filtered.vcf.gz \
+plink --vcf ../vcf/canis_raw_filtered.vcf.gz \
  --double-id \
  --allow-extra-chr \
  --make-bed \
- --out "$OUTDIR/dog_raw" \
+ --out "$OUTDIR/canis_raw" \
 
 # Check for missing data
-plink --bfile "$OUTDIR/dog_raw" \
+plink --bfile "$OUTDIR/canis_raw" \
  --missing \
  --allow-extra-chr \
- --out "$OUTDIR/dog_missing"
+ --out "$OUTDIR/canis_missing"
 
 # Deactivate conda environment
 conda deactivate

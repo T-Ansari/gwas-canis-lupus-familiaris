@@ -5,8 +5,8 @@
 #SBATCH --mem=8g
 #SBATCH --time=01:00:00
 #SBATCH --job-name=index_ref
-#SBATCH --output=index_ref.out
-#SBATCH --error=index_ref.err
+#SBATCH --output=Logs/slurm-%x-%j.out
+#SBATCH --error=Logs/slurm-%x-%j.err
 
 # Load Conda Environment
 source $HOME/.bash_profile

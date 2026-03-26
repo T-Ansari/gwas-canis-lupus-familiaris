@@ -6,10 +6,8 @@
 #SBATCH --mem=80g
 #SBATCH --time=10:00:00
 #SBATCH --job-name=fastp
-#SBATCH --output=/share/BioinfMSc/life4136_2526/rotation3/group1/TA/Scripts/Logs/slurm-%x-%j.out
-#SBATCH --error=/share/BioinfMSc/life4136_2526/rotation3/group1/TA/Scripts/Logs/slurm-%x-%j.err
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=mbxta9@nottingham.ac.uk
+#SBATCH --output=Logs/slurm-%x-%j.out
+#SBATCH --error=Logs/slurm-%x-%j.err
 #SBATCH --array=0-114
 
 # Load Conda Environment

@@ -5,16 +5,12 @@
 #SBATCH --mem=40g
 #SBATCH --time=1:00:00
 #SBATCH --job-name=filter_bams
-#SBATCH --output=/share/BioinfMSc/life4136_2526/rotation3/group1/CJ/results/logs/slurm/filter_bam/slurm-%x-%j.out
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=mbxcj2@exmail.nottingham.ac.uk
+#SBATCH --output=Logs/slurm-%x-%j.out
+#SBATCH --error=Logs/slurm-%x-%j.err
 #SBATCH --array=0-100
 
-
-# Source bash profile to enable conda
-source $HOME/.bash_profile
-
 # Activate conda environment
+source $HOME/.bash_profile
 conda activate CanisGWAS
 
 # Create bamlist file

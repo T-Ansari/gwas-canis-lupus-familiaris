@@ -183,8 +183,8 @@ The script [5_Variant_Calling.sh](Scripts/5_Variant_Calling.sh) performs the fol
 `ls ../filtered_bam/*.bam > filtered_bams.txt`
 - Ensure that the `filtered_bams.txt` file exists
 - Ensure the paths in `filtered_bams.txt` are correct
-- Create a file called `dog_chr_names.txt` containing a list of chromosomes in the reference genome, each on a new line (e.g. NC_049222.1)
-- Change the `--array=0-37` line in the SLURM header to match the **number of chromosomes** in `dog_chr_names.txt`
+- Create a file called `canis_chr_names.txt` containing a list of chromosomes in the reference genome, each on a new line (e.g. NC_049222.1)
+- Change the `--array=0-37` line in the SLURM header to match the **number of chromosomes** in `canis_chr_names.txt`
 
 Then, run the script with: `sbatch 5_Variant_Calling.sh`
 
@@ -192,8 +192,8 @@ Output files found in the `vcf` folder (per chromosome):
 
 | File | Description |
 |---|---|
-| `dog.CHR.vcf.gz` | Compressed VCF file for a single chromosome|
-| `dog.CHR.vcf.gz.csi` | VCF index file |
+| `canis.CHR.vcf.gz` | Compressed VCF file for a single chromosome|
+| `canis.CHR.vcf.gz.csi` | VCF index file |
 
 ---
 
@@ -215,8 +215,8 @@ Then, run the script with: `sbatch 6_Variant_Concat.sh`
 Output files, found in the `vcf` folder:
 | File | Description |
 |---|---|
-| `dog.vcf.gz` | Combined genome-wide VCF file containing all chromosome VCF data |
-| `dog.vcf.gz.csi` | VCF Index file |
+| `canis.vcf.gz` | Combined genome-wide VCF file containing all chromosome VCF data |
+| `canis.vcf.gz.csi` | VCF Index file |
 
 ---
 
@@ -231,7 +231,7 @@ The script [7_Variant_Filtering.sh](Scripts/7_Variant_Filtering.sh) performs the
 5. Indexes the final filtered VCF
 
 **Before running the script:**
-- Ensure that the concatenated VCF file `../vcf/dog.vcf.gz` exists
+- Ensure that the concatenated VCF file `../vcf/canis.vcf.gz` exists
 - Ensure the quality and depth parameters match your preferences
 
 Then run the script with: `sbatch 7_Variant_Filtering.sh`
@@ -240,28 +240,64 @@ Then run the script with: `sbatch 7_Variant_Filtering.sh`
 Output files in `vcf` folder:
 | File | Description |
 | --- | --- |
-| `dog_raw_filtered.vcf.gz` | Filtered raw vcf file |
-| `dog_raw_filtered.vcf.gz.csi` | Index file for above filtered vcf file|
+| `canis_raw_filtered.vcf.gz` | Filtered raw vcf file |
+| `canis_raw_filtered.vcf.gz.csi` | Index file for above filtered vcf file|
 | `variant_filtering.log` | Log file containing information on the filtering script as well statistics on the number of variants pre and post filtering |
 
 ---
 
-### 8. PLINK Preparation
-`PLINK` requires files to be in a specific binary format for processing, so a conversion must be done from VCF files to ones that PLINK can handle. Furthermore, some quality control needs to be conducted before parsing the files to PLINK for the GWAS.
+### 8. PLINK Preparation and QC
+This step addresses a number of problems that occur during a GWAS using `PLINK`. Firstly, `PLINK` requires files to be in a specific binary format for processing, so a conversion must be done from VCF files to ones that `PLINK` can handle. Then, missingness must be analysed to determine thresholds. Furthermore,  quality control needs to be conducted before parsing the files to `PLINK` for the GWAS.
 
-The script [8_Plink_Prep.sh](Scripts/8_Plink_Prep.sh) performs a number of steps:
+#### A. Preparation
+The script [8a_Plink_Prep.sh](Scripts/8a_Plink_Prep.sh) performs a number of steps:
 1. Creates a folder called `plink` in project directory
 2. Converts the filtered VCF file into .bed, .bim and .fam files.
 3. Generates missingness data for the genotypes across individuals and SNPs.
 
+Run the script with: `sbatch 8a_Plink_Prep.sh`
+
 Output files found in the `plink` folder:
 | File | Description |
 | --- | --- |
-| `dog_raw.bed` | Binary genotype file containing SNPs |
-| `dog_raw.bim`| Variant information file |
-| `dog_raw.fam` | Metadata containing IDs, phenotype data etc. |
-| `dog_missing.imiss` | Individual missingness statistics |
-| `dog_missing.lmiss` | SNP missingness statistics |
+| `canis_raw.bed` | Binary genotype file containing SNPs |
+| `canis_raw.bim`| Variant information file |
+| `canis_raw.fam` | Metadata containing IDs, phenotype data etc. |
+| `canis_missing.imiss` | Individual missingness statistics |
+| `canis_missing.lmiss` | SNP missingness statistics |
+
+#### B. Missingness analysis
+The script [8b_Missingness.r](Scripts/8b_Missingness.r) uses the missingness statistics generated in [Part A](#a-preparation) to create histograms that can be interpreted for appropriate thresholds to be used in [Part C](#c-quality-control).
+
+**Before running the script:**
+- Ensure that the file paths point to your `.imiss` and `.lmiss` files
+
+Then run the script in `R` and interpret the histograms.
+
+How to interpret the histograms:
+- High missingness in Samples should be removed with `--mind`
+- High missingness in SNPs should be removed with `--geno`
+
+
+#### C. Quality Control
+The script [8c_Plink_QC.sh](Scripts/8c_Plink_QC.sh) performs quality control based on the thresholds chosen in [Part B](#b-missingness-analysis).
+
+This includes the following:
+1. Removal of individuals with high missing genotype rates (`--mind`)
+2. Removal of SNPS with high missingness across samples (`--geno`)
+3. Filtering of rare variants with a minor allele frequency <0.5 (`--maf`)
+
+Output files found in the `plink` folder:
+| File | Description |
+| --- | --- |
+| `canis_qc.bed` | Filtered genotype file after QC |
+| `canis_qc.bim` | Filtered variant information |
+| `canis_qc.fam` | Filtered sample metadata |
+| `*.log` | PLINK log files |
+
+---
+
+### 9. GWAS
 
 ---
 

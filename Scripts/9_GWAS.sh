@@ -5,8 +5,8 @@
 #SBATCH --mem=64g
 #SBATCH --time=01:00:00
 #SBATCH --job-name=ld_prune
-#SBATCH --output=Logs/ld_prune.out
-#SBATCH --error=Logs/ld_prune.err
+#SBATCH --output=Logs/slurm-%x-%j.out
+#SBATCH --error=Logs/slurm-%x-%j.err
 
 # Load Conda Environment
 source $HOME/.bash_profile

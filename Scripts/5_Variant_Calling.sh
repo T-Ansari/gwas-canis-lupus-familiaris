@@ -6,10 +6,8 @@
 #SBATCH --mem=64g
 #SBATCH --time=10:00:00
 #SBATCH --job-name=vcf_call
-#SBATCH --output=/share/BioinfMSc/life4136_2526/rotation3/group1/TA/Scripts/Logs/slurm-%x-%j.out
-#SBATCH --error=/share/BioinfMSc/life4136_2526/rotation3/group1/TA/Scripts/Logs/slurm-%x-%j.err
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=mbxta9@nottingham.ac.uk
+#SBATCH --output=Logs/slurm-%x-%j.out
+#SBATCH --error=Logs/slurm-%x-%j.err
 #SBATCH --array=0-37
 
 # Load Conda Environment
@@ -32,14 +30,14 @@ BAMLIST=filtered_bams.txt
 mkdir -p "$VCFDIR"
 
 # Create list of dog chromosome names
-#grep  > dog_chr_names.txt
+#grep  > canis_chr_names.txt
 
 # Load Chromosome names
-mapfile -t CHRS < dog_chr_names.txt
+mapfile -t CHRS < canis_chr_names.txt
 CHR=${CHRS[$SLURM_ARRAY_TASK_ID]}
 
 # Output file
-OUTFILE="$VCFDIR/dog.${CHR}.vcf.gz"
+OUTFILE="$VCFDIR/canis.${CHR}.vcf.gz"
 
 # Running mpileup and variant calling
 bcftools mpileup \
