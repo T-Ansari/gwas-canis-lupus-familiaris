@@ -1,13 +1,17 @@
-# LIFE4136 - *Canis lupus familiaris* Genome-Wide Association Study
+# 🧬 *Canis lupus familiaris* Genome-Wide Association Study Pipeline
 
-## Overview
-This repository contains a reproducible bioinformatics pipeline to perform a genome-wide association study (GWAS) on *Canis lupus familiaris* sequencing data. 
+![Conda](https://img.shields.io/badge/Environment-Conda-blue){}
+![HPC](https://img.shields.io/badge/Platform-SLURM-green)
+![Language](https://img.shields.io/badge/Language-Bash%20%7C%20R-orange)
+
+## 📖 Overview
+This repository contains a reproducible bioinformatics pipeline to perform a genome-wide association study (GWAS) on *Canis lupus familiaris* sequencing data. Weight phenotype data is assessed in this workflow, however it is still applicable to other traits.
 
 ---
-## Table of Contents
-1. [Overview](#overview)  
-2. [Prerequisites](#prerequisites)  
-3. [Pipeline Workflow](#pipeline-workflow)  
+## 📚 Table of Contents
+1. [Overview](#-overview)  
+2. [Prerequisites](#-prerequisites)  
+3. [Pipeline Workflow](#-pipeline-workflow)  
    - [1. Fastp Read Trimming](#1-fastp-read-trimming)  
    - [2. Reference Genome Indexing](#2-reference-genome-indexing)  
    - [3. Alignment and BAM Processing](#3-alignment-and-bam-processing)  
@@ -15,14 +19,20 @@ This repository contains a reproducible bioinformatics pipeline to perform a gen
    - [5. Variant Calling](#5-variant-calling)  
    - [6. Variant Concatenation](#6-variant-concatenation)  
    - [7. Variant Filtering](#7-variant-filtering)  
-   - [8. PLINK Preparation](#8-plink-preparation)  
-4. [Notes](#notes)  
+   - [8. PLINK Preparation and QC](#8-plink-preparation-and-qc)  
+     - [A. Preparation](#a-preparation)  
+     - [B. Missingness Analysis](#b-missingness-analysis)  
+     - [C. Imputation](#c-imputation)  
+     - [D. Quality Control](#d-quality-control)  
+   - [9. GWAS](#9-gwas)  
+   - [10. Visualisation and Further Analysis](#10-visualisation-and-further-analysis)  
+4. [Notes](#-notes)  
    - [Tools Used](#tools-used)  
-5. [Acknowledgements](#acknowledgements)  
-6. [References](#references)
+5. [Acknowledgements](#-acknowledgements)  
+6. [References](#-references)
 
 ---
-## Prerequisites
+## 🔧 Prerequisites
 
 ### Tools and Files required
 - Paired end sequencing data (`.fastq.gz` format)
@@ -35,11 +45,11 @@ To ensure reproducibility, a conda environment file [environment.yml](environmen
 
 To create the environment, run: `conda env create -f environment.yml`
 
-Alternatively, the modules can be loaded or installed individually using the version information in the [notes](#notes) below, however you will be required to modify the scripts to accommodate this.
+Alternatively, the modules can be loaded or installed individually using the version information in the [notes](#-notes) below, however you will be required to modify the scripts to accommodate this.
 
 ---
 
-## Pipeline workflow
+## 📋 Pipeline workflow
 The pipeline consists of several analysis steps, each requiring the results of the previous step. This ensures a reproducible workflow from start to finish. A diagram is available for viewing in the dropdown below. 
 
 <details>
@@ -269,7 +279,7 @@ Output files found in the `plink` folder:
 | `canis_missing.lmiss` | SNP missingness statistics |
 
 #### B. Missingness analysis
-The script [8b_Missingness.r](Scripts/8b_Missingness.r) uses the missingness statistics generated in [Part A](#a-preparation) to create histograms that can be interpreted for appropriate thresholds to be used in [Part C](#c-quality-control).
+The script [8b_Missingness.r](Scripts/8b_Missingness.r) uses the missingness statistics generated in [Part A](#a-preparation) to create histograms that can be interpreted for appropriate thresholds to be used in [Part D](#d-quality-control).
 
 **Before running the script:**
 - Ensure that the file paths point to your `.imiss` and `.lmiss` files
@@ -287,15 +297,13 @@ The script [8c_Imputation.sh](Scripts/8c_Imputation.sh) performs the following s
 1. Takes the filtered VCF file generated in [Step 7](#7-variant-filtering)
 2. Runs Beagle to impute missing genotypes
 3. Outputs an imputed VCF file
-4. Converts the imputed VCF file into PLINK binary format for downstream QC and GWAS
+4. Converts the imputed VCF file into PLINK format for downstream GWAS analysis
 
 **Before running the script:**
 - Ensure the filtered VCF file exists: `../vcf/canis_raw_filtered.vcf.gz`
-- Download the Beagle `.jar` file from [here](https://faculty.washington.edu/browning/beagle/beagle.html).
-- Place the `.jar` file in your project directory (e.g. `Scripts/beagle.jar`) or update the script path accordingly
 - Ensure Java is available in your environment
 
-Then run the script with: `sbatch 8c_Imputation.sh`
+>Then run the script with: `sbatch 8c_Imputation.sh`
 
 Output files found in the `plink` folder:
 | File | Description |
@@ -385,30 +393,31 @@ Output files in the script directory:
 
 ---
 
-## Notes
+## 📝 Notes
 The pipeline is designed to run on a SLURM based High Performance Computing (HPC) cluster. The full list of modules used and version information is provided below.
 
 ### Tools Used
 
 | Software | Version | Purpose |
 | ----- | ----- | ----- |
+| [BCFTools](https://github.com/samtools/bcftools) | 1.18 | Variant calling and VCF file generation |
+| [Beagle](https://faculty.washington.edu/browning/beagle/beagle.html) | 5.5 | Imputation of missing genotypes |
+| [BWA](https://github.com/lh3/bwa) | 0.7.17 | Alignment of sequences to reference genome | 
 | [conda](https://docs.conda.io) | 25.11.1 | Environment and package management |
 | [fastp](https://github.com/OpenGene/fastp) | 0.23.4 | Read trimming and quality control |
-| [BWA](https://github.com/lh3/bwa) | 0.7.17 | Alignment of sequences to reference genome | 
-| [Samtools](https://github.com/samtools/samtools) | 1.18 | BAM file processing, indexing and sorting |
 | [Picard](https://github.com/broadinstitute/picard) | 3.0.0 | Removal of duplicate reads from BAM files |
-| [BCFTools](https://github.com/samtools/bcftools) | 1.18 | Variant calling and VCF file generation |
 | [PLINK](https://github.com/chrchang/plink-ng) | 1.9 | Genotype filtering and quality control and GWAS|
-| [Beagle](https://faculty.washington.edu/browning/beagle/beagle.html) | 5.5 | Imputation of missing genotypes
 | [qqman](https://github.com/stephenturner/qqman) | 0.1.9 | Manhattan plot visualisation |
-| [tidyverse](https://github.com/tidyverse) | 2.0.0 | Data analysis in R |
 | [R](https://www.r-project.org/)| 4.5.2 | Statistical analysis |
+| [Samtools](https://github.com/samtools/samtools) | 1.18 | BAM file processing, indexing and sorting |
+| [tidyverse](https://github.com/tidyverse) | 2.0.0 | Data analysis in R |
 
-See [References](#references) for the full citations of the software used in this workflow.
+
+See [References](#-references) for the full citations of the software used in this workflow.
 
 ---
 
-## Acknowledgements
+## 🎉 Acknowledgements
 - Tahir Ansari
 - Chris Janschke
 - Shahwar Nadeem
@@ -416,7 +425,7 @@ See [References](#references) for the full citations of the software used in thi
 
 ---
 
-## References
+## 📚 References
 - Anaconda, Inc. (2024) ‘Conda’. Available at: https://docs.conda.io/.
 - Browning, B.L., Zhou, Y. and Browning, S.R. (2018) ‘A One-Penny Imputed Genome from Next-Generation Reference Panels’, The American Journal of Human Genetics, 103(3), pp. 338–348. Available at: https://doi.org/10.1016/j.ajhg.2018.07.015.
 - Chang, C.C. et al. (2015) ‘Second-generation PLINK: rising to the challenge of larger and richer datasets’, GigaScience, 4(1), pp. s13742-015-0047–8. Available at: https://doi.org/10.1186/s13742-015-0047-8.
