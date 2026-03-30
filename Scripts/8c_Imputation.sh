@@ -18,10 +18,10 @@ VCF=../vcf/canis_raw_filtered.vcf.gz
 OUT=../plink/canis_imputed
 
 # Run Beagle
-java -Xmx30g -jar ./beagle.jar \
- gt=$VCF \
- out=$OUT \
- nthreads=$SLURM_CPUS_PER_TASK
+beagle \
+  gt=$VCF \
+  out=$OUT \
+  nthreads=$SLURM_CPUS_PER_TASK
 
 # Convert imputed VCF to PLINK format
 plink --vcf ../plink/canis_imputed.vcf.gz \
