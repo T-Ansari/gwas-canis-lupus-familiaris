@@ -79,8 +79,12 @@ This script [1_Fastp.sh](Scripts/1_Fastp.sh) will:
 
 **Before running the script:**
 - Ensure FASTQ reads are in paired-end gzipped format, ending with: `_1.fastq.gz` and `_2.fastq.gz`
-- From the directory containing the scripts, run: 
-`ls PATH_TO_YOUR_FASTQ_FILES/*_1.fastq.gz > names.txt`
+
+From the directory containing the scripts, run: 
+```{bash}
+ls PATH_TO_YOUR_FASTQ_FILES/*_1.fastq.gz > names.txt
+```
+Then:
 - Ensure that the `names.txt` file exists
 - Ensure the paths in `names.txt` are correct
 - Change the `--array=0-114` line in the SLURM header to match the number of lines in `names.txt`
@@ -144,8 +148,11 @@ The script [3_Bam_Creation.sh](Scripts/3_Bam_Creation.sh) performs several steps
 6. Index the resulting BAM files
 
 **Before running the script:**
-- From the directory containing the scripts, run:
-`ls ../trimmed_fastq/*_1.trimmed.fq.gz > trims.txt`
+From the directory containing the scripts, run:
+```{bash}
+ls ../trimmed_fastq/*_1.trimmed.fq.gz > trims.txt
+```
+Then:
 - Ensure that the `trims.txt` file exists
 - Ensure the paths in `trims.txt` are correct
 - Change the `--array=0-114` line in the SLURM header to match the number of lines in `trims.txt`
@@ -175,8 +182,11 @@ The script [4_Bam_Filtering.sh](Scripts/4_Bam_Filtering.sh) performs the followi
 5. Calculates alignment statistics 
 
 **Before running the script:**
-- From the directory containing the scripts, run:
-`ls ../bam/*.bam > bam_list.txt`
+From the directory containing the scripts, run:
+```{bash}
+ls ../bam/*.bam > bam_list.txt
+```
+Then:
 - Ensure that the `bam_list.txt` file exists
 - Change the `--array=0-100` line in the SLURM header to match the **number of BAMs** in `bam_list.txt`
 
@@ -204,8 +214,11 @@ The script [5_Variant_Calling.sh](Scripts/5_Variant_Calling.sh) performs the fol
 4. Indexes each VCF file 
 
 **Before running the script:**
-- From the directory containing the scripts, run:
-`ls ../filtered_bam/*.bam > filtered_bams.txt`
+From the directory containing the scripts, run:
+```{bash}
+ls ../filtered_bam/*.bam > filtered_bams.txt
+```
+Then:
 - Ensure that the `filtered_bams.txt` file exists
 - Ensure the paths in `filtered_bams.txt` are correct
 - Create a file called `canis_chr_names.txt` containing a list of chromosomes in the reference genome, each on a new line (e.g. NC_049222.1)
@@ -233,8 +246,11 @@ The script [6_Variant_Concat.sh](Scripts/6_Variant_Concat.sh) performs the follo
 - Indexes the genome VCF file
 
 **Before running the script:**
-- From the directory containing the scripts, run:
-`ls ../vcf/*.vcf.gz > vcf.list.txt`
+From the directory containing the scripts, run:
+```{bash}
+ls ../vcf/*.vcf.gz > vcf.list.txt
+```
+Then:
 - Ensure that the `vcf.list.txt` file exists
 - Ensure the paths in `vcf.list.txt` are correct
 
@@ -315,7 +331,7 @@ The script [8b_Missingness.r](Scripts/8b_Missingness.r) uses the missingness sta
 - High frequency of missingness in SNPs should be removed with `--geno`
 
 #### C. Imputation
-Due to the high levels of missing genotype data identified in [Part B](#b-missingness-analysis), filtering would result in a huge loss of variants and reduced statistical power. Genotype imputation is performed using `Beagle`, which estimates missing genotypes, to overcome this.
+Due to the high levels of missing genotype data identified in [Part B](#b-missingness-analysis), filtering would result in a huge loss of variants and reduced statistical power. To overcome this, genotype imputation is performed using `Beagle`, which estimates missing genotypes.
 
 The script [8c_Imputation.sh](Scripts/8c_Imputation.sh) performs the following steps:
 1. Takes the filtered VCF file generated in [Step 7](#7-variant-filtering)
@@ -348,6 +364,9 @@ This includes the following:
 1. Removal of individuals with high missing genotype rates (`--mind`)
 2. Removal of SNPS with high missingness across samples (`--geno`)
 3. Filtering of rare variants with a minor allele frequency <0.05 (`--maf`)
+
+**Before running the script:**
+ - Ensure the parameters in the script match your chosen thresholds
 
 **Then, run the script with:**
 ```{bash}
@@ -413,8 +432,8 @@ The script [10_Visualisation.r](Scripts/10_Visualisation.r) performs the followi
 5. Outputs a list of the most significant SNPs for further analysis
 
 **Before running the script:**
+- Ensure the `qqman` and `tidyverse` packages are installed in R.
 - Update the `FILEPATH` variable to have the path to your .assoc.linear file
-- Ensure the `qqman` and `tidyverse` packages are installed
 
 **Then run the script in `R`**
 
