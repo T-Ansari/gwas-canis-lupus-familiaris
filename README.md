@@ -1,6 +1,6 @@
 # 🧬 *Canis lupus familiaris* Genome-Wide Association Study Pipeline
 
-![Conda](https://img.shields.io/badge/Environment-Conda-blue){}
+![Conda](https://img.shields.io/badge/Environment-Conda-blue)
 ![HPC](https://img.shields.io/badge/Platform-SLURM-green)
 ![Language](https://img.shields.io/badge/Language-Bash%20%7C%20R-orange)
 
@@ -43,7 +43,10 @@ This repository contains a reproducible bioinformatics pipeline to perform a gen
 The scripts in this repository use a number of tools listed in the [Tools Used](#tools-used) section below. 
 To ensure reproducibility, a conda environment file [environment.yml](environment.yml) has been provided, with the correct versions and dependencies.
 
-To create the environment, run: `conda env create -f environment.yml`
+**To create the environment, run:**
+```{bash}
+conda env create -f environment.yml
+```
 
 Alternatively, the modules can be loaded or installed individually using the version information in the [notes](#-notes) below, however you will be required to modify the scripts to accommodate this.
 
@@ -64,8 +67,6 @@ The workflow begins with FASTQ files which undergo QC, trimming and alignment to
 
 All scripts are designed to be executed on a SLURM-based high performance cluster and need to be run in the order below. Some steps require manual prep (e.g. creation of a file list), so users **must read all instructions provided** with each step before execution.
 
-
-
 ---
 #### 1. Fastp Read Trimming
 The first step is to process and prepare your reads. Quality control and read trimming is performed using `fastp` to remove contamination and low quality bases that may impact the alignment and further downstream analyses.
@@ -85,7 +86,10 @@ This script [1_Fastp.sh](Scripts/1_Fastp.sh) will:
 - Change the `--array=0-114` line in the SLURM header to match the number of lines in `names.txt`
 - Ensure each `_1.fastq.gz` file has a complementary `_2.fastq.gz` file
 
->Then, run this script using: `sbatch 1_Fastp.sh`
+**Then, run this script using:**
+```{bash}
+sbatch 1_Fastp.sh
+```
 
 Output files found in the `trimmed_fastq` folder (per sample):
 
@@ -111,7 +115,10 @@ The script [2_Index_Reference.sh](Scripts/2_Index_Reference.sh) will:
 **Before running the script:**
 Edit the line `REF_GZ=PATH/TO/YOUR/REFERENCE/reference.fna.gz` in [2_Index_Reference.sh](Scripts/2_Index_Reference.sh) to point your reference genome file.
 
->Then, run the script with: `sbatch 2_Index_Reference.sh`
+**Then, run the script with:**
+```{bash}
+sbatch 2_Index_Reference.sh
+```
 
 Output files, found in the `reference` folder:
 | File | Description |
@@ -143,7 +150,10 @@ The script [3_Bam_Creation.sh](Scripts/3_Bam_Creation.sh) performs several steps
 - Ensure the paths in `trims.txt` are correct
 - Change the `--array=0-114` line in the SLURM header to match the number of lines in `trims.txt`
 
->Then, run the script with: `sbatch 3_Bam_Creation.sh`
+**Then, run the script with:**
+```{bash}
+sbatch 3_Bam_Creation.sh
+```
 
 Output files found in the `bam` folder (per sample):
 | File | Description |
@@ -170,7 +180,10 @@ The script [4_Bam_Filtering.sh](Scripts/4_Bam_Filtering.sh) performs the followi
 - Ensure that the `bam_list.txt` file exists
 - Change the `--array=0-100` line in the SLURM header to match the **number of BAMs** in `bam_list.txt`
 
->Then, run the script with: `sbatch 4_Bam_Filtering.sh`
+**Then, run the script with:**
+```{bash}
+sbatch 4_Bam_Filtering.sh
+```
 
 Output files found in the `filtered_bam` folder (per sample):
 | File | Description |
@@ -198,7 +211,10 @@ The script [5_Variant_Calling.sh](Scripts/5_Variant_Calling.sh) performs the fol
 - Create a file called `canis_chr_names.txt` containing a list of chromosomes in the reference genome, each on a new line (e.g. NC_049222.1)
 - Change the `--array=0-37` line in the SLURM header to match the **number of chromosomes** in `canis_chr_names.txt`
 
->Then, run the script with: `sbatch 5_Variant_Calling.sh`
+**Then, run the script with:**
+```{bash}
+sbatch 5_Variant_Calling.sh
+```
 
 Output files found in the `vcf` folder (per chromosome):
 
@@ -222,7 +238,10 @@ The script [6_Variant_Concat.sh](Scripts/6_Variant_Concat.sh) performs the follo
 - Ensure that the `vcf.list.txt` file exists
 - Ensure the paths in `vcf.list.txt` are correct
 
->Then, run the script with: `sbatch 6_Variant_Concat.sh`
+**Then, run the script with:**
+```{bash}
+sbatch 6_Variant_Concat.sh
+```
 
 Output files, found in the `vcf` folder:
 | File | Description |
@@ -246,8 +265,10 @@ The script [7_Variant_Filtering.sh](Scripts/7_Variant_Filtering.sh) performs the
 - Ensure that the concatenated VCF file `../vcf/canis.vcf.gz` exists
 - Ensure the quality and depth parameters match your preferences
 
->Then run the script with: `sbatch 7_Variant_Filtering.sh`
-
+**Then run the script with:**
+```{bash}
+sbatch 7_Variant_Filtering.sh
+```
 
 Output files in `vcf` folder:
 | File | Description |
@@ -267,7 +288,10 @@ The script [8a_Plink_Prep.sh](Scripts/8a_Plink_Prep.sh) performs a number of ste
 2. Converts the filtered VCF file into .bed, .bim and .fam files.
 3. Generates missingness data for the genotypes across individuals and SNPs.
 
->Run the script with: `sbatch 8a_Plink_Prep.sh`
+**Run the script with:**
+```{bash}
+sbatch 8a_Plink_Prep.sh
+```
 
 Output files found in the `plink` folder:
 | File | Description |
@@ -284,7 +308,7 @@ The script [8b_Missingness.r](Scripts/8b_Missingness.r) uses the missingness sta
 **Before running the script:**
 - Ensure that the file paths point to your `.imiss` and `.lmiss` files
 
->Then run the script in `R` and interpret the histograms.
+**Then run the script in `R` and interpret the histograms.**
 
 **How to interpret the histograms:**
 - High frequency of missingness in Samples should be removed with `--mind`
@@ -303,7 +327,10 @@ The script [8c_Imputation.sh](Scripts/8c_Imputation.sh) performs the following s
 - Ensure the filtered VCF file exists: `../vcf/canis_raw_filtered.vcf.gz`
 - Ensure Java is available in your environment
 
->Then run the script with: `sbatch 8c_Imputation.sh`
+**Then run the script with:**
+```{bash}
+sbatch 8c_Imputation.sh
+```
 
 Output files found in the `plink` folder:
 | File | Description |
@@ -322,7 +349,10 @@ This includes the following:
 2. Removal of SNPS with high missingness across samples (`--geno`)
 3. Filtering of rare variants with a minor allele frequency <0.05 (`--maf`)
 
->Then, run the script with: `sbatch 8d_Plink_QC.sh`
+**Then, run the script with:**
+```{bash}
+sbatch 8d_Plink_QC.sh
+```
 
 Output files found in the `plink` folder:
 | File | Description |
@@ -349,7 +379,10 @@ The script [9_GWAS.sh](Scripts/9_GWAS.sh) performs the following steps:
 - Ensure that the phenotypes file `canis_phenotypes.txt` exists in the same directory as the script
 - Ensure that the phenotype file contains the correct sample IDs and phenotype values (Three columns in order: `FamilyID`, `SampleID`, `Phenotype`)
 
->Then, run the script with: `sbatch 9_GWAS.sh`
+**Then, run the script with:**
+```{bash}
+sbatch 9_GWAS.sh
+```
 
 Output files found in the `gwas` and `prune` folders:
 | File | Description |
@@ -383,7 +416,7 @@ The script [10_Visualisation.r](Scripts/10_Visualisation.r) performs the followi
 - Update the `FILEPATH` variable to have the path to your .assoc.linear file
 - Ensure the `qqman` and `tidyverse` packages are installed
 
->Then run the script in `R`.
+**Then run the script in `R`**
 
 Output files in the script directory:
 | File | Description |
