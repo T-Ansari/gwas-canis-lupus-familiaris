@@ -35,7 +35,7 @@ This repository contains a reproducible bioinformatics pipeline to perform a gen
 ## 🔧 Prerequisites
 
 ### Tools and Files required
-- Paired end sequencing data (`.fastq.gz` format)
+- Paired end sequencing data (`.fastq.gz` format) - See more details in the [Input Data](#input-data) section below
 - *Canis lupus familiaris* reference genome (`.fna.gz` format)
 - Conda or Miniconda installed - [See conda documents](https://docs.conda.io/projects/conda/en/latest/index.html)
 
@@ -49,6 +49,29 @@ conda env create -f environment.yml
 ```
 
 Alternatively, the modules can be loaded or installed individually using the version information in the [notes](#-notes) below, however you will be required to modify the scripts to accommodate this.
+
+**In R, the `qqman` and `tidyverse` packages must be installed**
+
+### Input Data
+#### 1. Sequencing Data
+Paired-end whole-genome sequencing reads in compressed FASTQ format. Each sample should consist of two files:
+
+| File | Description |
+| --- | --- | 
+| `SampleName_1.fastq.gz` | Forward reads |
+| `SampleName_2.fastq.gz` | Reverse reads |
+
+#### 2. Reference Genome
+The *Canis lupus familiaris* reference genome assembly in compressed FASTA format (`.fna.gz`). This pipeline was designed using the `UU_Cfam_GSD_1.0` (Canfam4) assembly obtained from [NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_011100685.1/).
+
+#### 3. Phenotype file
+A tab-delimited text file named `canis_phenotypes.txt` containing phenotype measurements for each sample. In this pipeline, weight was assessed per sample. The file must follow the following format:
+
+| Column | Name | Description |
+| --- | --- | --- |
+| 1 | FamilyID | Family identifier |
+| 2 | SampleID | Individual sample identifier matching the sample IDs in the `.fam` file |
+| 3 | Phenotype | Measurement of phenotype being assessed (Weight in this pipeline) |
 
 ---
 
@@ -87,12 +110,11 @@ ls PATH_TO_YOUR_FASTQ_FILES/*_1.fastq.gz > names.txt
 Then:
 - Ensure that the `names.txt` file exists
 - Ensure the paths in `names.txt` are correct
-- Change the `--array=0-114` line in the SLURM header to match the number of lines in `names.txt`
 - Ensure each `_1.fastq.gz` file has a complementary `_2.fastq.gz` file
 
 **Then, run this script using:**
 ```{bash}
-sbatch 1_Fastp.sh
+sbatch --array=0-$(($(wc -l < names.txt) - 1)) 1_Fastp.sh
 ```
 
 Output files found in the `trimmed_fastq` folder (per sample):
@@ -155,11 +177,10 @@ ls ../trimmed_fastq/*_1.trimmed.fq.gz > trims.txt
 Then:
 - Ensure that the `trims.txt` file exists
 - Ensure the paths in `trims.txt` are correct
-- Change the `--array=0-114` line in the SLURM header to match the number of lines in `trims.txt`
 
 **Then, run the script with:**
 ```{bash}
-sbatch 3_Bam_Creation.sh
+sbatch --array=0-$(($(wc -l < trims.txt) - 1)) 3_Bam_Creation.sh
 ```
 
 Output files found in the `bam` folder (per sample):
@@ -188,11 +209,10 @@ ls ../bam/*.bam > bam_list.txt
 ```
 Then:
 - Ensure that the `bam_list.txt` file exists
-- Change the `--array=0-100` line in the SLURM header to match the **number of BAMs** in `bam_list.txt`
 
 **Then, run the script with:**
 ```{bash}
-sbatch 4_Bam_Filtering.sh
+sbatch --array=0-$(($(wc -l < bam_list.txt) - 1)) 4_Bam_Filtering.sh
 ```
 
 Output files found in the `filtered_bam` folder (per sample):
@@ -222,11 +242,10 @@ Then:
 - Ensure that the `filtered_bams.txt` file exists
 - Ensure the paths in `filtered_bams.txt` are correct
 - Create a file called `canis_chr_names.txt` containing a list of chromosomes in the reference genome, each on a new line (e.g. NC_049222.1)
-- Change the `--array=0-37` line in the SLURM header to match the **number of chromosomes** in `canis_chr_names.txt`
 
 **Then, run the script with:**
 ```{bash}
-sbatch 5_Variant_Calling.sh
+sbatch --array=0-$(($(wc -l < canis_chr_names.txt) - 1)) 5_Variant_Calling.sh
 ```
 
 Output files found in the `vcf` folder (per chromosome):
