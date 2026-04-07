@@ -8,18 +8,34 @@
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
 
+set -euo pipefail
+
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS
 
-# Defining Output locations
+# Defining File locations
+QCFILE="../plink/canis_qc"
 PRUNEDIR=../prune
 GWASDIR=../gwas
-mkdir -p $PRUNEDIR
-mkdir -p $GWASDIR
+mkdir -p "$PRUNEDIR" "$GWASDIR"
+
+# Ensure phenotype file exists
+if [[ ! -f "canis_phenotypes.txt" ]]; then
+    echo "Error: canis_phenotypes.txt not found. Please create a file as outlined in the README." >&2
+    exit 1
+fi
+
+# Check Plink files exist
+for ext in .bed .bim .fam; do
+    if [[ ! -f "${QCFILE}${ext}" ]]; then
+        echo "Error: ${QCFILE}${ext} not found. Run QC step before proceeding." >&2
+        exit 1
+    fi
+done
 
 # Perform initial PLINK GWAS
-plink --bfile ../plink/canis_qc \
+plink --bfile "$QCFILE" \
  --allow-extra-chr \
  --allow-no-sex \
  --pheno canis_phenotypes.txt \
@@ -27,13 +43,13 @@ plink --bfile ../plink/canis_qc \
  --out $GWASDIR/gwas_canis_uncorrected
 
 # Perform PLINK Prune for LD pruning
-plink --bfile ../plink/canis_qc \
+plink --bfile "$QCFILE" \
  --allow-extra-chr \
  --indep-pairwise 50 5 0.2 \
  --out $PRUNEDIR/prune
 
 # Perform PLINK PCA to get top 20 PCs
-plink --bfile ../plink/canis_qc \
+plink --bfile "$QCFILE" \
  --allow-extra-chr \
  --extract $PRUNEDIR/prune.prune.in \
  --pca 20 \
@@ -41,7 +57,7 @@ plink --bfile ../plink/canis_qc \
 
 # Perform GWAS Again with PCA covariates
 # Remove --linear if measuring qualitative traits and add --logistic
-plink --bfile ../plink/canis_qc \
+plink --bfile "$QCFILE" \
  --allow-extra-chr \
  --allow-no-sex \
  --pheno canis_phenotypes.txt \

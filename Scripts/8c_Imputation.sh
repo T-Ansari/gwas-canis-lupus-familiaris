@@ -8,14 +8,20 @@
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
 
+set -euo pipefail
+
+# Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS
 
-# Input VCF
+# Set Variables
 VCF=../vcf/canis_raw_filtered.vcf.gz
-
-# Output prefix
 OUT=../plink/canis_imputed
+
+if [[ ! -f "$VCF" ]]; then
+    echo "Error: $VCF not found. Run previous steps first." >&2
+    exit 1
+fi
 
 # Run Beagle
 beagle \

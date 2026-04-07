@@ -8,16 +8,25 @@
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
 
+set -euo pipefail
+
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS
 
-# Defining Output location
+# Defining file locations
+VCF=../vcf/canis_raw_filtered.vcf.gz
 OUTDIR=../plink
-mkdir -p $OUTDIR
+mkdir -p "$OUTDIR"
 
-# Convert VCF to PLINK bed,bim, fam format 
-plink --vcf ../vcf/canis_raw_filtered.vcf.gz \
+# Check if input VCF exists
+if [[ ! -f "$VCF" ]]; then
+    echo "Error: $VCF not found. Run previous steps first." >&2
+    exit 1
+fi
+
+# Convert VCF to PLINK bed,bim, fam format
+plink --vcf "$VCF" \
  --double-id \
  --allow-extra-chr \
  --make-bed \

@@ -8,7 +8,6 @@
 #SBATCH --job-name=vcf_call
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
-#SBATCH --array=0-37
 
 # Load Conda Environment
 source $HOME/.bash_profile
@@ -29,11 +28,24 @@ BAMLIST=filtered_bams.txt
 
 mkdir -p "$VCFDIR"
 
-# Create list of dog chromosome names
-#grep  > canis_chr_names.txt
+# Validate input files
+if [[ ! -f "$REF" ]]; then
+    echo "Error: $REF not found. Run previous steps first or ensure it exists." >&2
+    exit 1
+fi
 
-# Load Chromosome names
-mapfile -t CHRS < canis_chr_names.txt
+if [[ ! -f "$BAMLIST" ]]; then
+    echo "Error: $BAMLIST not found. Generate it with: ls ../filtered_bam/*.bam > filtered_bams.txt" >&2
+    exit 1
+fi
+
+# Load Chromosome names into an array if exists
+if [[ -f canis_chr_names.txt ]]; then
+    mapfile -t CHRS < canis_chr_names.txt
+else
+    echo "canis_chr_names.txt not found. Please create a list of chromosome names." &>2
+    exit 1
+fi
 CHR=${CHRS[$SLURM_ARRAY_TASK_ID]}
 
 # Output file

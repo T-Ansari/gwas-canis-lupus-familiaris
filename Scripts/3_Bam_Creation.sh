@@ -8,7 +8,8 @@
 #SBATCH --job-name=makebam
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
-#SBATCH --array=0-114
+
+set -euo pipefail
 
 # Load Conda Environment
 source $HOME/.bash_profile
@@ -20,11 +21,19 @@ TRIMDIR=../trimmed_fastq
 BAMDIR=../bam
 mkdir -p "$BAMDIR"
 
-# Create list of fastq files (Run once before script)
-#ls "$TRIMDIR"/*_1.trimmed.fq.gz > trims.txt
+# Check for reference file
+if [[ ! -f "$REF" ]]; then
+    echo "Error: $REF not found. Run previous steps first." >&2
+    exit 1
+fi
 
-# Load file list
-mapfile -t FILES < trims.txt
+# Load file list if exists
+if [[ -f trims.txt ]]; then
+    mapfile -t FILES < trims.txt
+else
+    echo "trims.txt not found. Please create it with: ls ../trimmed_fastq/*_1.trimmed.fq.gz > trims.txt" &>2
+    exit 1
+fi
 
 # Selecting files
 FILE=${FILES[$SLURM_ARRAY_TASK_ID]}
@@ -35,7 +44,13 @@ SORTBAM="$BAMDIR/${SAMPLE}.sort.bam"
 RMDBAM="$BAMDIR/${SAMPLE}.rmd.bam"
 METRICS="$BAMDIR/${SAMPLE}.metrics.txt"
 
-# Running Alignment and sorting	
+# Check both sample fastqs exist
+if [[ ! -f "$FILE1" ]] || [[ ! -f "$FILE2" ]]; then
+    echo "Error: trimmed FASTQs not found for $SAMPLE. Run step 1 first." >&2
+    exit 1
+fi
+
+# Running Alignment and sorting
 bwa mem \
  -M \
  -t "$SLURM_CPUS_PER_TASK" \
