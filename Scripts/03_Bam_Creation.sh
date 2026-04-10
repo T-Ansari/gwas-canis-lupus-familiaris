@@ -11,6 +11,19 @@
 
 set -euo pipefail
 
+####################################################################
+#                                                                  #
+#        Script: BAM Creation Script                               #
+#                                                                  #
+#        Author: Tahir Ansari                                      #
+#        Date:  25 March 2026                                      #
+#                                                                  #
+#        Description: Aligns trimmed reads to the reference        #
+#              genome using BWA-MEM, sorts the output and          #
+#              removes duplicate reads using Picard.               #
+#                                                                  #
+####################################################################
+
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS

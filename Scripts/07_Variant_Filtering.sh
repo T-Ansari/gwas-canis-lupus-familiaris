@@ -10,6 +10,19 @@
 
 set -euo pipefail
 
+####################################################################
+#                                                                  #
+#        Script: Variant Filtering Script                          #
+#                                                                  #
+#        Author: Tahir Ansari                                      #
+#        Date:  25 March 2026                                      #
+#                                                                  #
+#        Description: Filters the genome-wide VCF to retain        #
+#              only high-quality biallelic SNPs with               #
+#              QUAL>=30 and DEPTH>=10.                             #
+#                                                                  #
+####################################################################
+
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS

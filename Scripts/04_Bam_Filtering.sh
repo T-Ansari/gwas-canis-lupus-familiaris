@@ -10,6 +10,19 @@
 
 set -euo pipefail
 
+####################################################################
+#                                                                  #
+#        Script: BAM Filtering Script                              #
+#                                                                  #
+#        Author: Tahir Ansari                                      #
+#        Date:  25 March 2026                                      #
+#                                                                  #
+#        Description: Filters BAM files to retain only             #
+#              high-quality  paired reads, removing                #
+#              unmapped and secondary alignments.                  #
+#                                                                  #
+####################################################################
+
 # Activate conda environment
 source $HOME/.bash_profile
 conda activate CanisGWAS

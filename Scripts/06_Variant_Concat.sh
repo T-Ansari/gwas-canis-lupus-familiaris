@@ -10,6 +10,19 @@
 
 set -euo pipefail
 
+####################################################################
+#                                                                  #
+#        Script: Variant Concatenation Script                      #
+#                                                                  #
+#        Author: Tahir Ansari                                      #
+#        Date:  25 March 2026                                      #
+#                                                                  #
+#        Description: Concatenates per-chromosome VCF files        #
+#              into a single genome-wide VCF using                 #
+#              bcftools concat.                                    #
+#                                                                  #
+####################################################################
+
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS

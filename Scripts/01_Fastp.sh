@@ -11,6 +11,18 @@
 
 set -euo pipefail
 
+####################################################################
+#                                                                  #
+#        Script: FASTP Script.                                     #
+#                                                                  #
+#        Author: Tahir Ansari                                      #
+#        Date:  25 March 2026                                      #
+#                                                                  #
+#        Description: Script for trimming FASTQ files              #
+#              (Change FASTQDIR to your FASTQ file location)       #
+#                                                                  #
+####################################################################
+
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS

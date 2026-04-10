@@ -10,6 +10,19 @@
 
 set -euo pipefail
 
+####################################################################
+#                                                                  #
+#        Script: PLINK Preparation Script                          #
+#                                                                  #
+#        Author: Tahir Ansari                                      #
+#        Date:  25 March 2026                                      #
+#                                                                  #
+#        Description: Converts filtered VCF to PLINK binary        #
+#              format (.bed/.bim/.fam) and generates               #
+#              missingness statistics for QC thresholds.           #
+#                                                                  #
+####################################################################
+
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS

@@ -10,6 +10,19 @@
 
 set -euo pipefail
 
+####################################################################
+#                                                                  #
+#        Script: PLINK QC Script                                   #
+#                                                                  #
+#        Author: Tahir Ansari                                      #
+#        Date:  25 March 2026                                      #
+#                                                                  #
+#        Description: Applies quality control filters to the       #
+#              imputed PLINK files, removing individuals           #
+#              and SNPs with high missingness and rare variants.   #
+#                                                                  #
+####################################################################
+
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS

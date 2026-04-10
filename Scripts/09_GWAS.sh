@@ -10,6 +10,18 @@
 
 set -euo pipefail
 
+####################################################################
+#                                                                  #
+#        Script: GWAS Script                                       #
+#                                                                  #
+#        Author: Tahir Ansari                                      #
+#        Date:  25 March 2026                                      #
+#                                                                  #
+#        Description: Performs genome-wide association study       #
+#              using PLINK, without and with PCA covariates.       #
+#                                                                  #
+####################################################################
+
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS

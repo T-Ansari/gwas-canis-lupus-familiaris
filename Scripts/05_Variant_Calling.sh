@@ -9,17 +9,23 @@
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
 
+set -euo pipefail
+
+####################################################################
+#                                                                  #
+#        Script: Variant Calling Script                            #
+#                                                                  #
+#        Author: Tahir Ansari                                      #
+#        Date:  25 March 2026                                      #
+#                                                                  #
+#        Description: Calls variants per chromosome using          #
+#              bcftools mpileup and bcftools call                  #
+#                                                                  #
+####################################################################
+
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS
-
-set -euo pipefail
-
-# Set current directory to script location (for relative paths)
-#cd "$(dirname "$0")"
-
-#Create list of bam files
-#ls ../filtered_bam/*.bam > filtered_bams.txt
 
 # Setting file locations
 REF=../reference/canis_reference.fna
