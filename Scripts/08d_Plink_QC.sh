@@ -8,7 +8,6 @@
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
 
-set -euo pipefail
 
 ####################################################################
 #                                                                  #
@@ -26,6 +25,7 @@ set -euo pipefail
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS
+set -euo pipefail
 
 # Defining file locations
 IMPFILE=../plink/canis_imputed

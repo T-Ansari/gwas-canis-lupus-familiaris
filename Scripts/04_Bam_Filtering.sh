@@ -8,7 +8,6 @@
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
 
-set -euo pipefail
 
 ####################################################################
 #                                                                  #
@@ -26,6 +25,7 @@ set -euo pipefail
 # Activate conda environment
 source $HOME/.bash_profile
 conda activate CanisGWAS
+set -euo pipefail
 
 # Load sample names into an array if exists
 if [[ -f bam_list.txt ]]; then
@@ -35,11 +35,8 @@ else
     exit 1
 fi
 
-# Get the current sample name based on SLURM_ARRAY_TASK_ID
+# Get the current sample based on SLURM_ARRAY_TASK_ID
 SAMPLE=${FILES[$SLURM_ARRAY_TASK_ID]}
-
-# Define input files
-FILE=${SAMPLE}
 
 # Output directory
 OUTDIR=../filtered_bam/
@@ -50,13 +47,13 @@ mkdir -p "$OUTDIR"
 # -f includes properly paired	
 # -q 20 is min mapq 20 
 samtools view \
---threads 8 \
+--threads "$SLURM_CPUS_PER_TASK" \
 -F 0x904 \
 -f 0x2 \
 -q 20 \
 -b \
--o $OUTDIR/${SAMPLE}_filtered.bam \
-$FILE
+-o "$OUTDIR/${SAMPLE}_filtered.bam" \
+"$SAMPLE"
 
 # Index BAM
 samtools index $OUTDIR/${SAMPLE}_filtered.bam

@@ -9,11 +9,10 @@
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
 
-set -euo pipefail
 
 ####################################################################
 #                                                                  #
-#        Script: FASTP Script.                                     #
+#        Script: FASTP Script                                      #
 #                                                                  #
 #        Author: Tahir Ansari                                      #
 #        Date:  25 March 2026                                      #
@@ -26,6 +25,7 @@ set -euo pipefail
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS
+set -euo pipefail
 
 # Setting fastq file location
 FASTQDIR=PATH/TO/YOUR/FASTQ_FILES
@@ -53,6 +53,7 @@ if [[ ! -f "$SAMPLE1" ]] || [[ ! -f "$SAMPLE2" ]]; then
 fi
 
 # Running FASTP
+# -l 50 to remove short reads that won't map well
 fastp \
  --in1 "$SAMPLE1" \
  --in2 "$SAMPLE2" \

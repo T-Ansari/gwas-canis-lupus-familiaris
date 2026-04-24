@@ -9,7 +9,6 @@
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
 
-set -euo pipefail
 
 ####################################################################
 #                                                                  #
@@ -27,6 +26,7 @@ set -euo pipefail
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS
+set -euo pipefail
 
 # Setting file locations
 REF=../reference/canis_reference.fna
@@ -64,6 +64,7 @@ if [[ ! -f "$FILE1" ]] || [[ ! -f "$FILE2" ]]; then
 fi
 
 # Running Alignment and sorting
+# -M to mark split reads as secondary so picard handles duplicates correctly
 bwa mem \
  -M \
  -t "$SLURM_CPUS_PER_TASK" \
@@ -71,11 +72,11 @@ bwa mem \
  "$FILE1" \
  "$FILE2" | \
 samtools view -b | \
-samtools sort -T "$SAMPLE" -o "$SORTBAM"
+samtools sort -T "$SAMPLE" -m 3G -o "$SORTBAM"
 
 # Remove duplicates
-java -Xmx1g -jar "$EBROOTPICARD/picard.jar" \
-MarkDuplicates REMOVE_DUPLICATES=true \
+export _JAVA_OPTIONS="-Xmx24g"
+picard MarkDuplicates REMOVE_DUPLICATES=true \
 ASSUME_SORTED=true \
 VALIDATION_STRINGENCY=SILENT \
 MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=1000 \

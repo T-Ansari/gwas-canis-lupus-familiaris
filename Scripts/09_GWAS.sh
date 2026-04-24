@@ -8,7 +8,6 @@
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
 
-set -euo pipefail
 
 ####################################################################
 #                                                                  #
@@ -25,6 +24,7 @@ set -euo pipefail
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS
+set -euo pipefail
 
 # Defining File locations
 QCFILE="../plink/canis_qc"
@@ -67,7 +67,7 @@ plink --bfile "$QCFILE" \
  --pca 20 \
  --out $PRUNEDIR/pca20
 
-# Perform GWAS Again with PCA covariates
+# Perform GWAS Again with PCA covariates to correct for population structure
 # Remove --linear if measuring qualitative traits and add --logistic
 plink --bfile "$QCFILE" \
  --allow-extra-chr \

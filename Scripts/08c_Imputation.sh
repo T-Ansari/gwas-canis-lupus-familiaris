@@ -8,7 +8,6 @@
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
 
-set -euo pipefail
 
 ####################################################################
 #                                                                  #
@@ -26,6 +25,7 @@ set -euo pipefail
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS
+set -euo pipefail
 
 # Set Variables
 VCF=../vcf/canis_raw_filtered.vcf.gz
@@ -37,6 +37,7 @@ if [[ ! -f "$VCF" ]]; then
 fi
 
 # Run Beagle
+export _JAVA_OPTIONS="-Xmx56g"
 beagle \
   gt=$VCF \
   out=$OUT \

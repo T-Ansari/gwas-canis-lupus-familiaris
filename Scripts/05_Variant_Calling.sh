@@ -9,7 +9,6 @@
 #SBATCH --output=Logs/slurm-%x-%j.out
 #SBATCH --error=Logs/slurm-%x-%j.err
 
-set -euo pipefail
 
 ####################################################################
 #                                                                  #
@@ -26,6 +25,7 @@ set -euo pipefail
 # Load Conda Environment
 source $HOME/.bash_profile
 conda activate CanisGWAS
+set -euo pipefail
 
 # Setting file locations
 REF=../reference/canis_reference.fna
@@ -58,6 +58,7 @@ CHR=${CHRS[$SLURM_ARRAY_TASK_ID]}
 OUTFILE="$VCFDIR/canis.${CHR}.vcf.gz"
 
 # Running mpileup and variant calling
+# --min-MQ 30 and --min-BQ 30 as standard thresholds.
 bcftools mpileup \
  --threads "$SLURM_CPUS_PER_TASK" \
  -Ou \
