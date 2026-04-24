@@ -5,7 +5,7 @@
 ![Language](https://img.shields.io/badge/Language-Bash%20%7C%20R-orange)
 
 ## 📖 Overview
-This repository contains a reproducible bioinformatics pipeline to perform a genome-wide association study (GWAS) on *Canis lupus familiaris* sequencing data. Weight phenotype data is assessed in this workflow; however, it is still applicable to other traits.
+This repository contains a reproducible bioinformatics pipeline to perform a genome-wide association study (GWAS) on *Canis lupus familiaris* sequencing data. Weight phenotype data is assessed in this workflow; however, it is still applicable to other traits. The pipeline was used tp process 115 paired-end whole-genome sequencing samples from raw FASTQ files through to GWAS results and visualisation.
 
 ---
 ## 📚 Table of Contents
@@ -26,10 +26,11 @@ This repository contains a reproducible bioinformatics pipeline to perform a gen
      - [D. Quality Control](#d-quality-control)  
    - [9. GWAS](#9-gwas)  
    - [10. Visualisation and Further Analysis](#10-visualisation-and-further-analysis)  
-4. [Notes](#-notes)  
+4. [Output Structure](#-output-structure)
+5. [Notes](#-notes)  
    - [Tools Used](#tools-used)  
-5. [Acknowledgements](#-acknowledgements)  
-6. [References](#-references)
+6. [Acknowledgements](#-acknowledgements)  
+7. [References](#-references)
 
 ---
 ## 🔧 Prerequisites
@@ -56,15 +57,15 @@ install.packages(c("qqman", "tidyverse"))
 
 ### Input Data
 #### 1. Sequencing Data
-Paired-end whole-genome sequencing reads in compressed FASTQ format. Each sample should consist of two files:
+Paired-end whole-genome sequencing reads in compressed FASTQ format. This pipeline was developed using **115 samples**. Each sample should consist of two files:
 
-| File | Description |
-| --- | --- | 
-| `SampleName_1.fastq.gz` | Forward reads |
-| `SampleName_2.fastq.gz` | Reverse reads |
+| File | Description | Approx. Size (per sample) |
+| --- | --- | --- |
+| `SampleName_1.fastq.gz` | Forward reads | ~4.7–8.6 GB |
+| `SampleName_2.fastq.gz` | Reverse reads | ~4.8–8.6 GB |
 
 #### 2. Reference Genome
-The *Canis lupus familiaris* reference genome assembly in compressed FASTA format (`.fna.gz`). This pipeline was designed using the `UU_Cfam_GSD_1.0` (Canfam4) assembly obtained from [NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_011100685.1/).
+The *Canis lupus familiaris* reference genome assembly in compressed FASTA format (`.fna.gz`). This pipeline was designed using the `UU_Cfam_GSD_1.0` (*Canfam4*) assembly (accession *GCF_011100685.1*, size *2.5 GB*) obtained from [NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_011100685.1/).
 
 #### 3. Phenotype file
 A tab-delimited text file named `canis_phenotypes.txt` containing phenotype measurements for each sample. In this pipeline, weight was assessed per sample. The file must follow the following format:
@@ -74,6 +75,13 @@ A tab-delimited text file named `canis_phenotypes.txt` containing phenotype meas
 | 1 | FamilyID | Family identifier |
 | 2 | SampleID | Individual sample identifier matching the sample IDs in the `.fam` file [(See Step 8)](#8-plink-preparation-and-qc) |
 | 3 | Phenotype | Measurement of phenotype being assessed (Weight in this pipeline) |
+
+Example:
+```
+Family1  Sample1  25.4
+Family2  Sample2  31.7
+Family3  Sample3  8.2
+```
 
 ---
 
@@ -121,13 +129,13 @@ sbatch --array=0-$(($(wc -l < names.txt) - 1)) 01_Fastp.sh
 
 Output files found in the `trimmed_fastq` folder (per sample):
 
-| File | Description |
-| --- | --- |
-| `*_1.trimmed.fq.gz` | Trimmed forward reads |
-| `*_2.trimmed.fq.gz` | Trimmed reverse reads |
-| `*.html` | Quality Control report |
-| `*.json` | Statistics summary |
-| `*.log` | Log output |
+| File | Description | Approx. Size (per sample) |
+| --- | --- | --- |
+| `*_1.trimmed.fq.gz` | Trimmed forward reads | ~4.5–8 GB |
+| `*_2.trimmed.fq.gz` | Trimmed reverse reads | ~4.5–8 GB |
+| `*.html` | Quality Control report | ~453 KB |
+| `*.json` | Statistics summary | ~50 KB |
+| `*.log` | Log output | ~1.5 KB |
 
 ---
 
@@ -149,14 +157,15 @@ sbatch 02_Index_Reference.sh
 ```
 
 Output files, found in the `reference` folder:
-| File | Description |
-| --- | --- |
-| `reference.fna` | Unzipped reference file created from the input `.fna.gz` reference file |
-| `reference.fna.amb` | BWA index file containing ambiguous base information |
-| `reference.fna.bwt` | BWA index file containing transform index information |
-| `reference.fna.pac` | BWA packed DNA sequence file |
-| `reference.fna.sa` | BWA suffix array index file |
-| `reference.fna.fai` | Samtools FASTA index file |
+| File | Description | Approx. Size |
+| --- | --- | --- |
+| `reference.fna` | Unzipped reference file created from the input `.fna.gz` reference file | ~2.4 GB |
+| `reference.fna.amb` | BWA index file containing ambiguous base information | ~9.7 KB |
+| `reference.fna.ann` | BWA index file containing sequence name annotations | ~442 KB |
+| `reference.fna.bwt` | BWA index file containing transform index information | ~2.4 GB |
+| `reference.fna.pac` | BWA packed DNA sequence file | ~592 MB |
+| `reference.fna.sa` | BWA suffix array index file | ~1.2 GB |
+| `reference.fna.fai` | Samtools FASTA index file | ~82 KB |
 
 ---
 
@@ -186,11 +195,11 @@ sbatch --array=0-$(($(wc -l < trims.txt) - 1)) 03_Bam_Creation.sh
 ```
 
 Output files found in the `bam` folder (per sample):
-| File | Description |
-| --- | --- |
-| `*.rmd.bam` | Final BAM alignment file with duplicates removed |
-| `*.rmd.bam.bai` | BAM index file |
-| `*.metrics.txt` | Duplicate metrics from Picard |
+| File | Description | Approx. Size (per sample) |
+| --- | --- | --- |
+| `*.rmd.bam` | Final BAM alignment file with duplicates removed | ~10–20 GB |
+| `*.rmd.bam.bai` | BAM index file | ~5–15 MB |
+| `*.metrics.txt` | Duplicate metrics from Picard | <1 MB |
 
 ---
 
@@ -218,11 +227,11 @@ sbatch --array=0-$(($(wc -l < bam_list.txt) - 1)) 04_Bam_Filtering.sh
 ```
 
 Output files found in the `filtered_bam` folder (per sample):
-| File | Description |
-| --- | --- |
-| `*_filtered.bam` | Filtered BAM file containing the high-quality mapped reads |
-| `*_filtered.bam.bai` | Index file for filtered BAM |
-| `*_filtered_flagstats.txt` | Summary statistics of alignment after filtering |
+| File | Description | Approx. Size (per sample) |
+| --- | --- | --- |
+| `*_filtered.bam` | Filtered BAM file containing the high-quality mapped reads | ~8–15 GB |
+| `*_filtered.bam.bai` | Index file for filtered BAM | ~5–15 MB |
+| `*_filtered_flagstats.txt` | Summary statistics of alignment after filtering | <1 KB |
 
 ---
 
@@ -255,10 +264,10 @@ sbatch --array=0-$(($(wc -l < canis_chr_names.txt) - 1)) 05_Variant_Calling.sh
 
 Output files found in the `vcf` folder (per chromosome):
 
-| File | Description |
-|---|---|
-| `canis.CHR.vcf.gz` | Compressed VCF file for a single chromosome|
-| `canis.CHR.vcf.gz.csi` | VCF index file |
+| File | Description | Approx. Size (per chromosome) |
+|---|---|---|
+| `canis.CHR.vcf.gz` | Compressed VCF file for a single chromosome | ~50–200 MB |
+| `canis.CHR.vcf.gz.csi` | VCF index file | <1 MB |
 
 ---
 
@@ -284,10 +293,10 @@ sbatch 06_Variant_Concat.sh
 ```
 
 Output files, found in the `vcf` folder:
-| File | Description |
-|---|---|
-| `canis.vcf.gz` | Combined genome-wide VCF file containing all chromosome VCF data |
-| `canis.vcf.gz.csi` | VCF Index file |
+| File | Description | Approx. Size |
+|---|---|---|
+| `canis.vcf.gz` | Combined genome-wide VCF file containing all chromosome VCF data | ~2.0 GB |
+| `canis.vcf.gz.csi` | VCF Index file | <1 MB |
 
 ---
 
@@ -311,11 +320,11 @@ sbatch 07_Variant_Filtering.sh
 ```
 
 Output files in `vcf` folder:
-| File | Description |
-| --- | --- |
-| `canis_raw_filtered.vcf.gz` | Quality and depth filtered VCF containing biallelic SNPs only |
-| `canis_raw_filtered.vcf.gz.csi` | Index file for the filtered VCF |
-| `variant_filtering.log` | Log file containing information on the filtering script as well as statistics on the number of variants pre and post filtering |
+| File | Description | Approx. Size |
+| --- | --- | --- |
+| `canis_raw_filtered.vcf.gz` | Quality and depth filtered VCF containing biallelic SNPs only | ~6.9 GB |
+| `canis_raw_filtered.vcf.gz.csi` | Index file for the filtered VCF | ~1.6 MB |
+| `variant_filtering.log` | Log file containing information on the filtering script as well as statistics on the number of variants pre and post filtering | <1 MB |
 
 ---
 
@@ -334,13 +343,13 @@ sbatch 08a_Plink_Prep.sh
 ```
 
 Output files found in the `plink` folder:
-| File | Description |
-| --- | --- |
-| `canis_raw.bed` | Binary genotype file containing SNPs |
-| `canis_raw.bim`| Variant information file |
-| `canis_raw.fam` | Metadata containing IDs, phenotype data etc. |
-| `canis_missing.imiss` | Individual missingness statistics |
-| `canis_missing.lmiss` | SNP missingness statistics |
+| File | Description | Approx. Size |
+| --- | --- | --- |
+| `canis_raw.bed` | Binary genotype file containing SNPs | ~247 MB |
+| `canis_raw.bim` | Variant information file containing chromosome, ID, position, and both alleles per SNP | ~274 MB |
+| `canis_raw.fam` | Sample metadata containing family ID, sample ID, parental IDs, sex, and phenotype per individual | ~22 KB |
+| `canis_missing.imiss` | Individual missingness statistics | ~26 KB |
+| `canis_missing.lmiss` | SNP missingness statistics | ~417 MB |
 
 #### B. Missingness analysis
 The script [08b_Missingness.r](Scripts/08b_Missingness.r) uses the missingness statistics generated in [Part A](#a-preparation) to create histograms that can be interpreted for appropriate thresholds to be used in [Part D](#d-quality-control).
@@ -365,7 +374,6 @@ The script [08c_Imputation.sh](Scripts/08c_Imputation.sh) performs the following
 
 **Before running the script:**
 - Ensure the filtered VCF file exists: `../vcf/canis_raw_filtered.vcf.gz`
-- Ensure Java is available in your environment
 
 **Then run the script with:**
 ```{bash}
@@ -373,20 +381,21 @@ sbatch 08c_Imputation.sh
 ```
 
 Output files found in the `plink` folder:
-| File | Description |
-| --- | --- |
-| `canis_imputed.vcf.gz` | VCF file containing imputed genotypes |
-| `canis_imputed.bed` | PLINK binary genotype file (imputed data) |
-| `canis_imputed.bim` | Variant information file |
-| `canis_imputed.fam` | Sample metadata file |
-| `*.log` | Log files from Beagle and PLINK |
+| File | Description | Approx. Size |
+| --- | --- | --- |
+| `canis_imputed.vcf.gz` | VCF file containing imputed genotypes | ~361 MB |
+| `canis_imputed.vcf.gz.csi` | Index for the imputed VCF | ~1.7 MB |
+| `canis_imputed.bed` | PLINK binary genotype file (imputed data) | ~250 MB |
+| `canis_imputed.bim` | Variant information file | ~274 MB |
+| `canis_imputed.fam` | Sample metadata file | ~22 KB |
+| `*.log` | Log files from Beagle and PLINK | <1 MB |
 
 #### D. Quality Control
 The script [08d_Plink_QC.sh](Scripts/08d_Plink_QC.sh) performs quality control based on the thresholds chosen in [Part B](#b-missingness-analysis).
 
 This includes the following:
 1. Removal of individuals with high missing genotype rates (`--mind`)
-2. Removal of SNPS with high missingness across samples (`--geno`)
+2. Removal of SNPs with high missingness across samples (`--geno`)
 3. Filtering of rare variants with a minor allele frequency <0.05 (`--maf`)
 
 **Before running the script:**
@@ -398,12 +407,12 @@ sbatch 08d_Plink_QC.sh
 ```
 
 Output files found in the `plink` folder:
-| File | Description |
-| --- | --- |
-| `canis_qc.bed` | Filtered genotype file after QC |
-| `canis_qc.bim` | Filtered variant information |
-| `canis_qc.fam` | Filtered sample metadata |
-| `*.log` | PLINK log files |
+| File | Description | Approx. Size |
+| --- | --- | --- |
+| `canis_qc.bed` | Filtered genotype file after QC | ~100–150 MB |
+| `canis_qc.bim` | Filtered variant information | ~100–150 MB |
+| `canis_qc.fam` | Filtered sample metadata | ~22 KB |
+| `*.log` | PLINK log files | <1 MB |
 
 ---
 
@@ -413,7 +422,7 @@ This step performs the genome-wide association study using `PLINK`, as well as a
 The script [09_GWAS.sh](Scripts/09_GWAS.sh) performs the following steps:
 1. Creates folders called `prune` and `gwas` in the project directory
 2. Performs an initial GWAS that isn't corrected for population structure
-3. Performs LD pruning to remove breed-related associations and reduce linkage disequilibrium effects
+3. Performs LD pruning to remove highly correlated SNPs and reduce linkage disequilibrium effects
 4. Performs PCA on the pruned SNP dataset to determine population structure
 5. Repeats the GWAS using the top 3 principal components as covariates
 
@@ -428,15 +437,15 @@ sbatch 09_GWAS.sh
 ```
 
 Output files found in the `gwas` and `prune` folders:
-| File | Description |
-| --- | --- |
-| `gwas/gwas_canis_uncorrected.assoc.linear` | Results of the initial uncorrected GWAS |
-| `prune/prune.prune.in` | SNPs retained after LD pruning |
-| `prune/prune.prune.out` | SNPs removed during LD pruning |
-| `prune/pca20.eigenvec` | Principal component scores for each sample |
-| `prune/pca20.eigenval` | Variance explained by each principal component |
-| `gwas/gwas_canis_pca3.assoc.linear` | GWAS results corrected for population structure using the PCs |
-| `*.log` | PLINK log files |
+| File | Description | Approx. Size |
+| --- | --- | --- |
+| `gwas/gwas_canis_uncorrected.assoc.linear` | Results of the initial uncorrected GWAS | ~50–200 MB |
+| `prune/prune.prune.in` | SNPs retained after LD pruning | ~5–20 MB |
+| `prune/prune.prune.out` | SNPs removed during LD pruning | ~5–20 MB |
+| `prune/pca20.eigenvec` | Principal component scores for each sample | <1 MB |
+| `prune/pca20.eigenval` | Variance explained by each principal component | <1 KB |
+| `gwas/gwas_canis_pca3.assoc.linear` | GWAS results corrected for population structure using the PCs | ~50–200 MB |
+| `*.log` | PLINK log files | <1 MB |
 
 ---
 ### 10. Visualisation and further analysis
@@ -462,15 +471,36 @@ The script [10_Visualisation.r](Scripts/10_Visualisation.r) performs the followi
 **Then run the script in `R`**
 
 Output files in the script directory:
-| File | Description |
-| --- | --- |
-| `Canis_Manhattan.png` | Manhattan plot showing genome-wide SNP associations with body weight |
-| Console output | Top SNPs ranked by statistical significance (lowest p-values) |
+| File | Description | Approx. Size |
+| --- | --- | --- |
+| `Canis_Manhattan.png` | Manhattan plot showing genome-wide SNP associations with body weight | ~1–5 MB |
+| Console output | Top SNPs ranked by statistical significance (lowest p-values) | N/A |
+
+---
+
+## 📂 Output Structure
+
+After running the pipeline, the project directory will have the following structure:
+
+```
+Main/
+├── Scripts/
+├── trimmed_fastq/        # Trimmed reads
+├── reference/            # Reference genome and indexes
+├── bam/                  # Sorted BAMs
+├── filtered_bam/         # Quality-filtered BAMs
+├── vcf/                  # Per-chromosome VCFs and genome-wide VCFs
+├── plink/                # PLINK binary files and QC outputs
+├── prune/                # LD-pruned SNP files and PCA outputs
+└── gwas/                 # GWAS results
+```
 
 ---
 
 ## 📝 Notes
 The pipeline is designed to run on a SLURM-based High Performance Computing (HPC) cluster. The full list of modules used and version information is provided below.
+
+File sizes described in this documentation are only estimates and provided as a guide, the sizes may increase or decrease dependant on the samples, reference and other factors.
 
 ### Tools Used
 
@@ -482,7 +512,7 @@ The pipeline is designed to run on a SLURM-based High Performance Computing (HPC
 | [conda](https://docs.conda.io) | 25.11.1 | Environment and package management |
 | [fastp](https://github.com/OpenGene/fastp) | 0.23.4 | Read trimming and quality control |
 | [Picard](https://github.com/broadinstitute/picard) | 3.0.0 | Removal of duplicate reads from BAM files |
-| [PLINK](https://github.com/chrchang/plink-ng) | 1.9 | Genotype filtering and quality control and GWAS|
+| [PLINK](https://github.com/chrchang/plink-ng) | 1.9 | Genotype filtering, quality control, PCA, and GWAS|
 | [qqman](https://github.com/stephenturner/qqman) | 0.1.9 | Manhattan plot visualisation |
 | [R](https://www.r-project.org/)| 4.5.2 | Statistical analysis |
 | [Samtools](https://github.com/samtools/samtools) | 1.18 | BAM file processing, indexing and sorting |
