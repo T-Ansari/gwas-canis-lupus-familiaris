@@ -5,7 +5,7 @@
 ![Language](https://img.shields.io/badge/Language-Bash%20%7C%20R-orange)
 
 ## 📖 Overview
-This repository contains a reproducible bioinformatics pipeline to perform a genome-wide association study (GWAS) on *Canis lupus familiaris* sequencing data. Weight phenotype data is assessed in this workflow; however, it is still applicable to other traits. The pipeline was used tp process 115 paired-end whole-genome sequencing samples from raw FASTQ files through to GWAS results and visualisation.
+This repository contains a reproducible bioinformatics pipeline to perform a genome-wide association study (GWAS) on *Canis lupus familiaris* sequencing data. Weight phenotype data is assessed in this workflow; however, it is still applicable to other traits. The pipeline was used to process 115 paired-end whole-genome sequencing samples from raw FASTQ files through to GWAS results and visualisation.
 
 ---
 ## 📚 Table of Contents
